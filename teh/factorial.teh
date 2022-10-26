@@ -1,0 +1,9 @@
+Def Factorial (
+    Let N be from the stack;
+    For each in Range 1 to N step: 1 (*) from 1;
+);
+
+Prints (
+    "The factorial of 6 is: "
+    Factorial of 720
+);
