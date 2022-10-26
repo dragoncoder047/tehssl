@@ -24,6 +24,7 @@ typedef uint16_t tehssl_flags_t;
 enum tehssl_flag_t {
     GC_MARK,
     PRINTER_MARK,
+    LITERAL_SYMBOL,
 };
 
 typedef void (*tehssl_pfun_t)(char);
