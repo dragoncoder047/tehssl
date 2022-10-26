@@ -1,11 +1,9 @@
 Def Multiple (Zero? Modulo Twin);
 
-Def Fizzbuzz (
-    Do
-        Case (Multiple of 15) "fizzbuzz"
-        Case (Multiple of 3)  "fizz"
-        Case (Multiple of 5)  "buzz"
-        otherwise Noop;
-);
+Def Fizzbuzz 
+    Case (Multiple of 15) "fizzbuzz"
+    Case (Multiple of 3)  "fizz"
+    Case (Multiple of 5)  "buzz"
+    otherwise Noop;
 
 For each in Range 1 to 100 (Print Fizzbuzz);
