@@ -216,8 +216,5 @@ inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, 
 }
 
 inline void tehssl_pop(struct tehssl_object_t** stack) {
-    struct tehssl_object_t* cell = tehssl_alloc(vm, LIST);
-    cell->car = item;
-    cell->next = *stack;
-    *stack = cell;
+    *stack = &(*stack)->next;
 }
