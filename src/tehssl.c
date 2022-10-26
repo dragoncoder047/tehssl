@@ -33,12 +33,12 @@ typedef tehssl_result_t (*tehssl_fun_t)(struct tehssl_vm_t*);
 
 // Different types
 enum tehssl_typeid_t {
-//  NAME              CAR          CDR          EXTRA
-    LIST,        //   (value)      (next)
+//  NAME              CAR          CDR          NEXT
+    LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
-    CODE,        //   (item)       (next)
-    LAMBDA,      //   (code)       (next)
-    CLOSURE,     //   (lambda)     (scope)
+    LINE,        //                (item)       (next)
+    LAMBDA,      //                (code)       (next)
+    CLOSURE,     //   (scope)      (lambda)
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
@@ -60,19 +60,23 @@ struct tehssl_object_t {
         double number;
         struct {
             union {
-                struct tehssl_object_t* car;
+                struct tehssl_object_t* key;
+                struct tehssl_object_t* scope;
                 struct tehssl_object_t* functions;
                 char* name;
             };
             union {
-                struct tehssl_object_t* cdr;
+                struct tehssl_object_t* value;
+                struct tehssl_object_t* item;
+                struct tehssl_object_t* code;
                 struct tehssl_object_t* variables;
-                struct tehssl_object_t* closed_scope;
+                struct tehssl_object_t* lambda;
                 tehssl_pfun_t pfun;
                 tehssl_fun_t fun;
             };
             union {
                 struct tehssl_object_t* next;
+                struct tehssl_object_t* parent;
                 tehssl_gfun_t gfun;
             };
         };
@@ -134,14 +138,17 @@ void tehssl_markobject(struct tehssl_object_t* object) {
     switch (object->type) {
         case DICT:
         case SCOPE:
-            tehssl_markobject(object->next);
+            tehssl_markobject(object->key);
             // fallthrough
         case LIST:
-        case CODE:
+        case LINE:
         case LAMBDA:
+            tehssl_markobject(object->value);
+            object = object->next;
+            goto MARK;
         case CLOSURE:
-            tehssl_markobject(object->car);
-            object = object->cdr;
+            tehssl_markobject(object->scope);
+            object = object->lambda;
             goto MARK;
         case NUMBER:
         case SYMBOL:
@@ -150,7 +157,7 @@ void tehssl_markobject(struct tehssl_object_t* object) {
             break; // noop
         case UFUNCTION:
         case VARIABLE:
-            tehssl_markobject(object->cdr);
+            tehssl_markobject(object->value);
             // fallthrough
         case CFUNCTION:
             object = object->next;
@@ -199,7 +206,7 @@ size_t tehssl_gc(struct tehssl_vm_t* vm) {
     return n - vm->num_objects;
 }
 
-// Push (for stacks)
+// Push / Pop (for stacks)
 
 inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item) {
     struct tehssl_object_t* cell = tehssl_alloc(vm, LIST);
@@ -208,3 +215,9 @@ inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, 
     *stack = cell;
 }
 
+inline void tehssl_pop(struct tehssl_object_t** stack) {
+    struct tehssl_object_t* cell = tehssl_alloc(vm, LIST);
+    cell->car = item;
+    cell->next = *stack;
+    *stack = cell;
+}
