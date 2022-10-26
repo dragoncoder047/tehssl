@@ -114,6 +114,10 @@ struct tehssl_vm_t* tehssl_new_vm() {
 struct tehssl_object_t* tehssl_alloc(struct tehssl_vm_t* vm, tehssl_typeid_t type) {
     if (vm->num_objects == vm->next_gc) tehssl_gc(vm);
     struct tehssl_object_t* object = (struct tehssl_object_t*)malloc(sizeof(struct tehssl_object_t));
+    if (!object) {
+        vm->result_code = OUT_OF_MEMORY;
+        return NULL;
+    }
     object->type = type;
     object->next_object = vm->first_object;
     vm->first_object = object;
