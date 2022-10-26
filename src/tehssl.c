@@ -210,11 +210,11 @@ size_t tehssl_gc(struct tehssl_vm_t* vm) {
 
 inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item) {
     struct tehssl_object_t* cell = tehssl_alloc(vm, LIST);
-    cell->car = item;
+    cell->value = item;
     cell->next = *stack;
     *stack = cell;
 }
 
 inline void tehssl_pop(struct tehssl_object_t** stack) {
-    *stack = &(*stack)->next;
+    *stack = (*stack)->next;
 }
