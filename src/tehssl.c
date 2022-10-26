@@ -36,7 +36,7 @@ enum tehssl_typeid_t {
 //  NAME              CAR          CDR          NEXT
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
-    LINE,        //                (item)       (next)
+    LINE,        //   (prev)       (item)       (next)
     LAMBDA,      //                (code)       (next)
     CLOSURE,     //   (scope)      (lambda)
     NUMBER,      //   double
@@ -138,10 +138,10 @@ void tehssl_markobject(struct tehssl_object_t* object) {
     switch (object->type) {
         case DICT:
         case SCOPE:
+        case LINE:
             tehssl_markobject(object->key);
             // fallthrough
         case LIST:
-        case LINE:
         case LAMBDA:
             tehssl_markobject(object->value);
             object = object->next;
