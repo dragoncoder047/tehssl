@@ -13,6 +13,8 @@ It's an Arduino library! Embed it in your projects, hook up a microSD card, and 
 Download `tehssl.c` and link to it in your arduino sketch. Here is a basic example of what functions you will need to call:
 
 ```cpp
+#include "tehssl.c"
+
 // this is your custom function
 tehssl_result_t myfunction(struct tehssl_vm_t* vm) {
     // do something
