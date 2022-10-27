@@ -1,6 +1,5 @@
 #ifdef __cplusplus
-#include <iostream>
-#include <string>
+#include <cstring>
 #else
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +9,14 @@
 #ifndef TEHSSL_MIN_HEAP_SIZE
 #define TEHSSL_MIN_HEAP_SIZE 64
 #endif
+
+// Polyfills
+char* mystrdup(const char* str) {
+    size_t len = strlen(str) + 1;
+    char* dup = (char *)malloc(len);
+    strncpy(dup, str, len);
+    return dup;
+}
 
 // Forward references
 struct tehssl_vm_t;
@@ -184,6 +191,7 @@ void tehssl_sweep(struct tehssl_vm_t* vm) {
         if (!tehssl_test_flag(*object, GC_MARK)) {
             tehssl_object_t* unreached = *object;
             *object = unreached->next_object;
+            // printf("Freeing object type number %d", unreached->type);
             switch (unreached->type) {
                 case SYMBOL:
                 case STRING:
@@ -192,9 +200,11 @@ void tehssl_sweep(struct tehssl_vm_t* vm) {
                 case CFUNCTION:
                 case VARIABLE:
                     free(unreached->name);
+                    // printf(" with a string");
                 default:
                     break;
             }
+            // putchar('\n');
             free(unreached);
             vm->num_objects--;
         } else {
@@ -234,9 +244,23 @@ inline void tehssl_pop(struct tehssl_object_t** stack) {
     *stack = (*stack)->next;
 }
 
+// Basic: Register C function
+
+void tehssl_register(struct tehssl_vm_t* vm, const char* name, tehssl_fun_t fun) {
+    if (vm->global_scope == NULL) {
+        vm->global_scope = tehssl_alloc(vm, SCOPE);
+    }
+    struct tehssl_object_t* fobj = tehssl_alloc(vm, CFUNCTION);
+    fobj->name = mystrdup(name);
+    fobj->fun = fun;
+    fobj->next = vm->global_scope->functions;
+    vm->global_scope->functions = fobj;
+}
+
 #ifdef __cplusplus
 // Test code
 // for pasting into https://cpp.sh/
+tehssl_result_t myfunction(struct tehssl_vm_t*) { return OK; }
 int main() {
     struct tehssl_vm_t* vm = tehssl_new_vm();
     // Make some garbage
@@ -245,7 +269,7 @@ int main() {
     tehssl_alloc(vm, NUMBER);
     tehssl_alloc(vm, NUMBER);
     // This is not garbage, it is on the stack now
-    tehssl_push(vm, &vm->stack, tehssl_alloc(vm, NUMBER));
+    tehssl_register(vm, "foobar", myfunction);
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);
