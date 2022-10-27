@@ -113,6 +113,7 @@ struct tehssl_vm_t* tehssl_new_vm() {
     vm->result_code = OK;
     vm->num_objects = 0;
     vm->next_gc = TEHSSL_MIN_HEAP_SIZE;
+    return vm;
 }
 
 struct tehssl_object_t* tehssl_alloc(struct tehssl_vm_t* vm, tehssl_typeid_t type) {
