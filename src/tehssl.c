@@ -235,6 +235,7 @@ int main() {
     tehssl_alloc(vm, NUMBER);
     tehssl_alloc(vm, NUMBER);
     tehssl_alloc(vm, NUMBER);
+    tehssl_push(vm, &vm->stack, tehssl_alloc(vm, NUMBER));
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);
