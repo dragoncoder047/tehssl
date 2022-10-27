@@ -1,5 +1,10 @@
+#ifdef __cplusplus
+#include <iostream>
+#include <string>
+#else
 #include <stdlib.h>
 #include <string.h>
+#endif
 
 // Config options
 #ifndef TEHSSL_MIN_HEAP_SIZE
@@ -36,7 +41,7 @@ enum tehssl_typeid_t {
 //  NAME              CAR          CDR          NEXT
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
-    LINE,        //   (prev)       (item)       (next)
+    LINE,        //                (item)       (next)
     LAMBDA,      //                (code)       (next)
     CLOSURE,     //   (scope)      (lambda)
     NUMBER,      //   double
@@ -139,10 +144,10 @@ void tehssl_markobject(struct tehssl_object_t* object) {
     switch (object->type) {
         case DICT:
         case SCOPE:
-        case LINE:
             tehssl_markobject(object->key);
             // fallthrough
         case LIST:
+        case LINE:
         case LAMBDA:
             tehssl_markobject(object->value);
             object = object->next;
@@ -219,3 +224,20 @@ inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, 
 inline void tehssl_pop(struct tehssl_object_t** stack) {
     *stack = (*stack)->next;
 }
+
+#ifdef __cplusplus
+// Test code
+// for pasting into https://cpp.sh/
+int main() {
+    struct tehssl_vm_t* vm = tehssl_new_vm();
+    // Make some garbage
+    tehssl_alloc(vm, NUMBER);
+    tehssl_alloc(vm, NUMBER);
+    tehssl_alloc(vm, NUMBER);
+    tehssl_alloc(vm, NUMBER);
+    printf("%lu objects\n", vm->num_objects);
+    tehssl_gc(vm);
+    printf("%lu objects after gc\n", vm->num_objects);
+    free(vm);
+}
+#endif
