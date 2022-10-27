@@ -29,6 +29,7 @@ size_t tehssl_gc(struct tehssl_vm_t*);
 
 enum tehssl_result_t {
     OK,
+    ERROR,
     RETURN,
     BREAK,
     CONTINUE,
@@ -39,6 +40,7 @@ typedef uint16_t tehssl_flags_t;
 enum tehssl_flag_t {
     GC_MARK,
     PRINTER_MARK,
+    MACRO_FUNCTION,
     LITERAL_SYMBOL
 };
 
@@ -51,7 +53,7 @@ enum tehssl_typeid_t {
 //  NAME              CAR          CDR          NEXT
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
-    LINE,        //   (prev)       (item)       (next)
+    LINE,        //                (item)       (next)
     LAMBDA,      //                (code)       (next)
     CLOSURE,     //   (scope)      (lambda)
     NUMBER,      //   double
@@ -118,6 +120,37 @@ struct tehssl_object_t {
     };
 };
 
+inline bool tehssl_has_name(struct tehssl_object_t* object) {
+    switch (object->type) {
+        case SYMBOL:
+        case STRING:
+        case STREAM:
+        case UFUNCTION:
+        case CFUNCTION:
+        case VARIABLE:
+            return true;
+        default:
+            return false;
+    }
+}
+
+inline bool tehssl_is_literal(struct tehssl_object_t* object) {
+    switch (object->type) {
+        case SYMBOL:
+            return tehssl_test_flag(object, LITERAL_SYMBOL);
+        case LIST:
+        case DICT:
+        case LINE:
+        case LAMBDA:
+        case STRING:
+        case STREAM:
+        case NUMBER:
+            return true;
+        default:
+            return false;
+    }
+}
+
 
 // TEHSSL VM type
 struct tehssl_vm_t {
@@ -159,6 +192,7 @@ struct tehssl_object_t* tehssl_alloc(struct tehssl_vm_t* vm, tehssl_typeid_t typ
         vm->result_code = OUT_OF_MEMORY;
         return NULL;
     }
+    memset(object, 0, sizeof(struct tehssl_object_t));
     object->type = type;
     object->next_object = vm->first_object;
     vm->first_object = object;
@@ -219,19 +253,11 @@ void tehssl_sweep(struct tehssl_vm_t* vm) {
             #if TEHSSL_DEBUG == 1
             printf("Freeing a "); debug_print_type(unreached->type);
             #endif
-            switch (unreached->type) {
-                case SYMBOL:
-                case STRING:
-                case STREAM:
-                case UFUNCTION:
-                case CFUNCTION:
-                case VARIABLE:
-                    #if TEHSSL_DEBUG == 1
-                    printf(" string: %s", unreached->name);
-                    #endif
-                    free(unreached->name);
-                default:
-                    break;
+            if (tehssl_has_name(unreached)) {
+                #if TEHSSL_DEBUG == 1
+                printf(" string: %s", unreached->name);
+                #endif
+                free(unreached->name);
             }
             #if TEHSSL_DEBUG == 1
             putchar('\n');
@@ -271,8 +297,11 @@ inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, 
     *stack = cell;
 }
 
-inline void tehssl_pop(struct tehssl_object_t** stack) {
+inline struct tehssl_object_t* tehssl_pop(struct tehssl_object_t** stack) {
+    if (*stack == NULL) return NULL;
+    struct tehssl_object_t* item = (*stack)->value;
     *stack = (*stack)->next;
+    return item;
 }
 
 // Stream read and write functions
@@ -296,9 +325,89 @@ char tehssl_peekchar(struct tehssl_vm_t* vm, tehssl_gfun_t gfun) {
     return vm->last_char;
 }
 
+// Make objects
+
+struct tehssl_object_t* tehssl_make_string(struct tehssl_vm_t* vm, const char* string) {
+    struct tehssl_object_t* sobj = tehssl_alloc(vm, STRING);
+    sobj->name = mystrdup(string);
+    return sobj;
+}
+
+#define SYMBOL_LITERAL true
+#define SYMBOL_WORD false
+struct tehssl_object_t* tehssl_make_symbol(struct tehssl_vm_t* vm, const char* name, bool is_literal) {
+    struct tehssl_object_t* symbol = tehssl_make_string(vm, name);
+    symbol->type = SYMBOL;
+    if (is_literal) tehssl_set_flag(symbol, LITERAL_SYMBOL);
+    return symbol;
+}
+
+struct tehssl_object_t* tehssl_make_number(struct tehssl_vm_t* vm, double n) {
+    struct tehssl_object_t* sobj = tehssl_alloc(vm, NUMBER);
+    sobj->number = n;
+    return sobj;
+}
+
+
+// Lookup values in scope
+
+#define LOOKUP_FUNCTION true
+#define LOOKUP_VARIABLE false
+struct tehssl_object_t* tehssl_lookup(struct tehssl_object_t* scope, char* name, bool where) {
+    if (scope == NULL || scope->type != SCOPE) return NULL;
+    struct tehssl_object_t* result = NULL;
+    if (where == LOOKUP_FUNCTION) result = scope->functions;
+    else result = scope->variables;
+    while (result != NULL) {
+        if (strcmp(result->name, name) == 0) break;
+        result = result->next;
+    }
+    return result;
+}
+
+
+// Evaluator
+
+// This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
+tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_object_t* scope, struct tehssl_object_t* line) {
+    struct tehssl_object_t* processed_line = NULL;
+    while (line != NULL) {
+        struct tehssl_object_t* item = line->value;
+        if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
+            tehssl_push(vm, &processed_line, item);
+            line = line->next;
+            continue;
+        }
+        struct tehssl_object_t* macro = tehssl_lookup(item, item->name, LOOKUP_FUNCTION);
+        if (macro == NULL || !tehssl_test_flag(macro, MACRO_FUNCTION)) {
+            tehssl_push(vm, &processed_line, item);
+            line = line->next;
+            continue;
+        }
+        if (macro->type == UFUNCTION) {
+            // abort
+            vm->result = tehssl_make_string(vm, "todo: user-defined macros");
+            return ERROR;
+        } else if (macro->type == CFUNCTION) {
+            tehssl_push(vm, &vm->stack, line);
+            macro->fun(vm);
+            line = tehssl_pop(&vm->stack);
+            tehssl_push(vm, &processed_line, line->value);
+            line = line->next;
+        } else {
+            // something's wrong
+            vm->result = tehssl_make_string(vm, "error: defined non-function as a macro");
+            return ERROR;
+        }
+    }
+    return processed_line;
+}
+
 // Register C functions
 
-void tehssl_register(struct tehssl_vm_t* vm, const char* name, tehssl_fun_t fun) {
+#define IS_MACRO true
+#define NOT_MACRO false
+void tehssl_register(struct tehssl_vm_t* vm, const char* name, tehssl_fun_t fun, bool is_macro) {
     if (vm->global_scope == NULL) {
         vm->global_scope = tehssl_alloc(vm, SCOPE);
     }
@@ -306,6 +415,7 @@ void tehssl_register(struct tehssl_vm_t* vm, const char* name, tehssl_fun_t fun)
     fobj->name = mystrdup(name);
     fobj->fun = fun;
     fobj->next = vm->global_scope->functions;
+    if (is_macro) tehssl_set_flag(fobj, MACRO_FUNCTION);
     vm->global_scope->functions = fobj;
 }
 
