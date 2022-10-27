@@ -169,6 +169,7 @@ struct tehssl_object_t* tehssl_alloc(struct tehssl_vm_t* vm, tehssl_typeid_t typ
 void tehssl_markobject(struct tehssl_object_t* object) {
     MARK:
     // already marked? abort
+    if (object == NULL) return;
     if (tehssl_test_flag(object, GC_MARK)) return;
     tehssl_set_flag(object, GC_MARK);
     switch (object->type) {
