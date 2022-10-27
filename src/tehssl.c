@@ -129,6 +129,7 @@ struct tehssl_vm_t {
     struct tehssl_object_t* first_object;
     size_t num_objects;
     size_t next_gc;
+    char last_char;
 };
 
 // Flags test
@@ -272,6 +273,27 @@ inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, 
 
 inline void tehssl_pop(struct tehssl_object_t** stack) {
     *stack = (*stack)->next;
+}
+
+// Stream read and write functions
+
+char tehssl_getchar(struct tehssl_vm_t* vm, tehssl_gfun_t gfun) {
+    if (vm->last_char) {
+        char ch = vm->last_char;
+        vm->last_char = 0;
+        return ch;
+    }
+    return gfun();
+}
+
+void tehssl_putchar(char ch, tehssl_pfun_t pfun) {
+    pfun(ch);
+}
+
+char tehssl_peekchar(struct tehssl_vm_t* vm, tehssl_gfun_t gfun) {
+    if (vm->last_char) return vm->last_char;
+    vm->last_char = gfun();
+    return vm->last_char;
 }
 
 // Register C functions
