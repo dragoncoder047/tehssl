@@ -66,6 +66,26 @@ enum tehssl_typeid_t {
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
+#if TEHSSL_DEBUG == 1
+void debug_print_type(tehssl_typeid_t t) {
+    switch (t) {
+        case LIST: printf("LIST"); break;
+        case DICT: printf("DICT"); break;
+        case LINE: printf("LINE"); break;
+        case LAMBDA: printf("LAMBDA"); break;
+        case CLOSURE: printf("CLOSURE"); break;
+        case NUMBER: printf("NUMBER"); break;
+        case SYMBOL: printf("SYMBOL"); break;
+        case STRING: printf("STRING"); break;
+        case STREAM: printf("STREAM"); break;
+        case SCOPE: printf("SCOPE"); break;
+        case UFUNCTION: printf("UFUNCTION"); break;
+        case CFUNCTION: printf("CFUNCTION"); break;
+        case VARIABLE: printf("VARIABLE"); break;
+    }
+}
+#endif
+
 // Main OBJECT type
 struct tehssl_object_t {
     tehssl_typeid_t type;
@@ -195,7 +215,7 @@ void tehssl_sweep(struct tehssl_vm_t* vm) {
             tehssl_object_t* unreached = *object;
             *object = unreached->next_object;
             #if TEHSSL_DEBUG == 1
-            printf("Freeing object type number %d", unreached->type);
+            printf("Freeing a "); debug_print_type(unreached->type);
             #endif
             switch (unreached->type) {
                 case SYMBOL:
@@ -205,7 +225,7 @@ void tehssl_sweep(struct tehssl_vm_t* vm) {
                 case CFUNCTION:
                 case VARIABLE:
                     #if TEHSSL_DEBUG == 1
-                    printf(" with a string: %s", unreached->name);
+                    printf(" string: %s", unreached->name);
                     #endif
                     free(unreached->name);
                 default:
@@ -270,7 +290,7 @@ void tehssl_init_builtins(struct tehssl_vm_t* vm) {
     // TODO
 }
 
-#ifdef __cplusplus
+#if TEHSSL_DEBUG == 1
 // Test code
 // for pasting into https://cpp.sh/
 tehssl_result_t myfunction(struct tehssl_vm_t*) { return OK; }
@@ -282,6 +302,8 @@ int main() {
     tehssl_alloc(vm, NUMBER);
     tehssl_alloc(vm, NUMBER);
     // This is not garbage, it is on the stack now
+    tehssl_push(vm, &vm->stack, tehssl_alloc(vm, NUMBER));
+    tehssl_push(vm, &vm->stack, tehssl_alloc(vm, NUMBER));
     tehssl_register(vm, "MyFunction", myfunction);
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
