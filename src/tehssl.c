@@ -295,15 +295,15 @@ void tehssl_destroy(struct tehssl_vm_t* vm) {
 
 // Push / Pop (for stacks)
 
-inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item) {
-    tehssl_push(vm, stack, item, LIST);
-}
-
 inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item, tehssl_typeid_t t) {
     struct tehssl_object_t* cell = tehssl_alloc(vm, t);
     cell->value = item;
     cell->next = *stack;
     *stack = cell;
+}
+
+inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item) {
+    tehssl_push(vm, stack, item, LIST);
 }
 
 inline struct tehssl_object_t* tehssl_pop(struct tehssl_object_t** stack) {
