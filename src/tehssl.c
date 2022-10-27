@@ -32,14 +32,14 @@ enum tehssl_result_t {
     RETURN,
     BREAK,
     CONTINUE,
-    OUT_OF_MEMORY,
+    OUT_OF_MEMORY
 };
 
 typedef uint16_t tehssl_flags_t;
 enum tehssl_flag_t {
     GC_MARK,
     PRINTER_MARK,
-    LITERAL_SYMBOL,
+    LITERAL_SYMBOL
 };
 
 typedef void (*tehssl_pfun_t)(char);
@@ -62,7 +62,7 @@ enum tehssl_typeid_t {
     SCOPE,       //   (functions)  (variables)  (parent)
     UFUNCTION,   //   char*        (lambda)     (next)
     CFUNCTION,   //   char*        tehssl_fun_t (next)
-    VARIABLE,    //   char*        (value)      (next)
+    VARIABLE     //   char*        (value)      (next)
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 

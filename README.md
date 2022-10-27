@@ -14,7 +14,7 @@ Download `tehssl.c` and link to it in your arduino sketch. Here is a basic examp
 
 ```cpp
 // this is your custom function
-tehssl_result_t myfunction(struct tehssl_vm_t*) {
+tehssl_result_t myfunction(struct tehssl_vm_t* vm) {
     // do something
     return OK;
 }
