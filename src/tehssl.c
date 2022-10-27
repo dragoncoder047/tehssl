@@ -183,7 +183,7 @@ void tehssl_sweep(struct tehssl_vm_t* vm) {
     while (*object) {
         if (!tehssl_test_flag(*object, GC_MARK)) {
             tehssl_object_t* unreached = *object;
-            *object = unreached->next;
+            *object = unreached->next_object;
             switch (unreached->type) {
                 case SYMBOL:
                 case STRING:
