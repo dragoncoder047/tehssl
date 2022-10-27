@@ -37,5 +37,4 @@ void loop() {
     // Free the VM and all its objects
     tehssl_destroy(vm);
 }
-
 ```

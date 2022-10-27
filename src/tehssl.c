@@ -60,7 +60,8 @@ enum tehssl_typeid_t {
     SCOPE,       //   (functions)  (variables)  (parent)
     UFUNCTION,   //   char*        (lambda)     (next)
     CFUNCTION,   //   char*        tehssl_fun_t (next)
-    VARIABLE     //   char*        (value)      (next)
+    VARIABLE,    //   char*        (value)      (next)
+    RSTACK       //   int          (top)        (current)
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
@@ -117,6 +118,7 @@ void debug_print_type(tehssl_typeid_t t) {
         case UFUNCTION: printf("UFUNCTION"); break;
         case CFUNCTION: printf("CFUNCTION"); break;
         case VARIABLE: printf("VARIABLE"); break;
+        case RSTACK: printf("RSTACK"); break;
     }
 }
 #endif
@@ -230,6 +232,7 @@ void tehssl_markobject(struct tehssl_object_t* object) {
             break; // noop
         case UFUNCTION:
         case VARIABLE:
+        case RSTACK:
             tehssl_markobject(object->value);
             // fallthrough
         case CFUNCTION:
@@ -293,7 +296,11 @@ void tehssl_destroy(struct tehssl_vm_t* vm) {
 // Push / Pop (for stacks)
 
 inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item) {
-    struct tehssl_object_t* cell = tehssl_alloc(vm, LIST);
+    tehssl_push(vm, stack, item, LIST);
+}
+
+inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item, tehssl_typeid_t t) {
+    struct tehssl_object_t* cell = tehssl_alloc(vm, t);
     cell->value = item;
     cell->next = *stack;
     *stack = cell;
@@ -353,48 +360,51 @@ struct tehssl_object_t* tehssl_make_number(struct tehssl_vm_t* vm, double n) {
 
 // Lookup values in scope
 
-#define LOOKUP_FUNCTION true
-#define LOOKUP_VARIABLE false
-struct tehssl_object_t* tehssl_lookup(struct tehssl_object_t* scope, char* name, bool where) {
+#define LOOKUP_FUNCTION 0
+#define LOOKUP_MACRO 1
+#define LOOKUP_VARIABLE 2
+struct tehssl_object_t* tehssl_lookup(struct tehssl_object_t* scope, char* name, uint8_t where) {
+    LOOKUP:
     if (scope == NULL || scope->type != SCOPE) return NULL;
     struct tehssl_object_t* result = NULL;
-    if (where == LOOKUP_FUNCTION) result = scope->functions;
-    else result = scope->variables;
+    if (where == LOOKUP_VARIABLE) result = scope->variables;
+    else result = scope->functions;
     while (result != NULL) {
-        if (strcmp(result->name, name) == 0) break;
+        if (strcmp(result->name, name) == 0 && (where != LOOKUP_MACRO || tehssl_test_flag(result, MACRO_FUNCTION))) return result;
         result = result->next;
     }
-    return result;
+    scope = scope->parent;
+    goto LOOKUP;
 }
 
 
 // Evaluator
 
 // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
-tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_object_t* scope, struct tehssl_object_t* line) {
+tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_object_t* line, struct tehssl_object_t* scope) {
     struct tehssl_object_t* processed_line = NULL;
     while (line != NULL) {
         struct tehssl_object_t* item = line->value;
         if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
-            tehssl_push(vm, &processed_line, item);
+            tehssl_push(vm, &processed_line, item, LINE);
             line = line->next;
             continue;
         }
-        struct tehssl_object_t* macro = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
-        if (macro == NULL || !tehssl_test_flag(macro, MACRO_FUNCTION)) {
-            tehssl_push(vm, &processed_line, item);
+        struct tehssl_object_t* macro = tehssl_lookup(scope, item->name, LOOKUP_MACRO);
+        if (macro == NULL) {
+            tehssl_push(vm, &processed_line, item, LINE);
             line = line->next;
             continue;
         }
         if (macro->type == UFUNCTION) {
-            // abort
+            // not implemented
             vm->return_value = tehssl_make_string(vm, "todo: user-defined macros");
             return ERROR;
         } else if (macro->type == CFUNCTION) {
             tehssl_push(vm, &vm->stack, line);
             macro->fun(vm);
             line = tehssl_pop(&vm->stack);
-            tehssl_push(vm, &processed_line, line->value);
+            tehssl_push(vm, &processed_line, line->value, LINE);
             line = line->next;
         } else {
             // something's wrong
@@ -404,6 +414,24 @@ tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_ob
     }
     vm->return_value = processed_line;
     return OK;
+}
+
+#ifndef yield
+#define yield()
+#endif
+
+tehssl_result_t tehssl_eval(struct tehssl_vm_t* vm, struct tehssl_object_t* code, struct tehssl_object_t* scope) {
+    struct tehssl_object_t* return_stack = NULL;
+    EVAL:
+    yield();
+    if (tehssl_is_literal(code)) {
+        tehssl_push(vm, &vm->stack, code);
+        code = NULL;
+    }
+    if (code == NULL) {
+        if (return_stack == NULL) return OK;
+        // TODO
+    }
 }
 
 // Register C functions
@@ -429,7 +457,7 @@ void tehssl_init_builtins(struct tehssl_vm_t* vm) {
 #if TEHSSL_DEBUG == 1
 // Test code
 // for pasting into https://cpp.sh/
-tehssl_result_t myfunction(struct tehssl_vm_t*) { return OK; }
+tehssl_result_t myfunction(struct tehssl_vm_t* vm) { return OK; }
 int main() {
     struct tehssl_vm_t* vm = tehssl_new_vm();
     // Make some garbage
