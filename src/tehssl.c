@@ -212,6 +212,15 @@ size_t tehssl_gc(struct tehssl_vm_t* vm) {
     return n - vm->num_objects;
 }
 
+void tehssl_destroy(struct tehssl_vm_t* vm) {
+    vm->stack = NULL;
+    vm->return_value = NULL;
+    vm->global_scope = NULL;
+    vm->gc_stack = NULL;
+    tehssl_gc(vm);
+    free(vm);
+}
+
 // Push / Pop (for stacks)
 
 inline void tehssl_push(struct tehssl_vm_t* vm, struct tehssl_object_t** stack, struct tehssl_object_t* item) {
@@ -239,6 +248,6 @@ int main() {
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);
-    free(vm);
+    tehssl_destroy(vm);
 }
 #endif
