@@ -21,10 +21,6 @@ char* mystrdup(const char* str) {
     return dup;
 }
 
-// Forward references
-struct tehssl_vm_t;
-size_t tehssl_gc(struct tehssl_vm_t*);
-
 // Datatypes
 
 enum tehssl_result_t {
@@ -68,26 +64,6 @@ enum tehssl_typeid_t {
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
-#if TEHSSL_DEBUG == 1
-void debug_print_type(tehssl_typeid_t t) {
-    switch (t) {
-        case LIST: printf("LIST"); break;
-        case DICT: printf("DICT"); break;
-        case LINE: printf("LINE"); break;
-        case LAMBDA: printf("LAMBDA"); break;
-        case CLOSURE: printf("CLOSURE"); break;
-        case NUMBER: printf("NUMBER"); break;
-        case SYMBOL: printf("SYMBOL"); break;
-        case STRING: printf("STRING"); break;
-        case STREAM: printf("STREAM"); break;
-        case SCOPE: printf("SCOPE"); break;
-        case UFUNCTION: printf("UFUNCTION"); break;
-        case CFUNCTION: printf("CFUNCTION"); break;
-        case VARIABLE: printf("VARIABLE"); break;
-    }
-}
-#endif
-
 // Main OBJECT type
 struct tehssl_object_t {
     tehssl_typeid_t type;
@@ -119,6 +95,31 @@ struct tehssl_object_t {
         };
     };
 };
+
+// Forward references
+struct tehssl_vm_t;
+size_t tehssl_gc(struct tehssl_vm_t*);
+bool tehssl_test_flag(struct tehssl_object_t* object, tehssl_flag_t f);
+
+#if TEHSSL_DEBUG == 1
+void debug_print_type(tehssl_typeid_t t) {
+    switch (t) {
+        case LIST: printf("LIST"); break;
+        case DICT: printf("DICT"); break;
+        case LINE: printf("LINE"); break;
+        case LAMBDA: printf("LAMBDA"); break;
+        case CLOSURE: printf("CLOSURE"); break;
+        case NUMBER: printf("NUMBER"); break;
+        case SYMBOL: printf("SYMBOL"); break;
+        case STRING: printf("STRING"); break;
+        case STREAM: printf("STREAM"); break;
+        case SCOPE: printf("SCOPE"); break;
+        case UFUNCTION: printf("UFUNCTION"); break;
+        case CFUNCTION: printf("CFUNCTION"); break;
+        case VARIABLE: printf("VARIABLE"); break;
+    }
+}
+#endif
 
 inline bool tehssl_has_name(struct tehssl_object_t* object) {
     switch (object->type) {
@@ -378,7 +379,7 @@ tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_ob
             line = line->next;
             continue;
         }
-        struct tehssl_object_t* macro = tehssl_lookup(item, item->name, LOOKUP_FUNCTION);
+        struct tehssl_object_t* macro = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
         if (macro == NULL || !tehssl_test_flag(macro, MACRO_FUNCTION)) {
             tehssl_push(vm, &processed_line, item);
             line = line->next;
@@ -386,7 +387,7 @@ tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_ob
         }
         if (macro->type == UFUNCTION) {
             // abort
-            vm->result = tehssl_make_string(vm, "todo: user-defined macros");
+            vm->return_value = tehssl_make_string(vm, "todo: user-defined macros");
             return ERROR;
         } else if (macro->type == CFUNCTION) {
             tehssl_push(vm, &vm->stack, line);
@@ -396,11 +397,12 @@ tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_ob
             line = line->next;
         } else {
             // something's wrong
-            vm->result = tehssl_make_string(vm, "error: defined non-function as a macro");
+            vm->return_value = tehssl_make_string(vm, "error: defined non-function as a macro");
             return ERROR;
         }
     }
-    return processed_line;
+    vm->return_value = processed_line;
+    return OK;
 }
 
 // Register C functions
@@ -437,7 +439,7 @@ int main() {
     // This is not garbage, it is on the stack now
     tehssl_push(vm, &vm->stack, tehssl_alloc(vm, NUMBER));
     tehssl_push(vm, &vm->stack, tehssl_alloc(vm, NUMBER));
-    tehssl_register(vm, "MyFunction", myfunction);
+    tehssl_register(vm, "MyFunction", myfunction, NOT_MACRO);
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);
