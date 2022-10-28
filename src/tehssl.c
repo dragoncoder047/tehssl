@@ -352,13 +352,13 @@ struct tehssl_object_t* tehssl_make_string(struct tehssl_vm_t* vm, const char* s
 struct tehssl_object_t* tehssl_make_symbol(struct tehssl_vm_t* vm, const char* name, bool is_literal) {
     struct tehssl_object_t* object = vm->first_object;
     while (object != NULL) {
-        if (object->type == SYMBOL && strcmp(object->name, string) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
+        if (object->type == SYMBOL && strcmp(object->name, name) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
         object = object->next_object;
     }
     struct tehssl_object_t* sobj = tehssl_alloc(vm, SYMBOL);
-    sobj->name = mystrdup(string);
-    if (is_literal) tehssl_set_flag(symbol, LITERAL_SYMBOL);
-    return symbol;
+    sobj->name = mystrdup(name);
+    if (is_literal) tehssl_set_flag(sobj, LITERAL_SYMBOL);
+    return sobj;
 }
 
 struct tehssl_object_t* tehssl_make_number(struct tehssl_vm_t* vm, double n) {
