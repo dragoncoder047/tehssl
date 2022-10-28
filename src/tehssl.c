@@ -36,6 +36,9 @@ enum tehssl_result_t {
     OUT_OF_MEMORY
 };
 
+#define TEHSSL_RETURN_ON_ERROR(r) do { if ((r) == ERROR || (r) == OUT_OF_MEMORY) return (r); } while (false)
+
+
 typedef uint16_t tehssl_flags_t;
 enum tehssl_flag_t {
     GC_MARK,
@@ -46,7 +49,7 @@ enum tehssl_flag_t {
 
 // Different types
 enum tehssl_typeid_t {
-//  NAME              CAR          CDR          NEXT
+//  Type      Cell--> A            B            C
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
     LINE,        //                (item)       (next)
@@ -463,7 +466,7 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
     if (lambda == NULL) return OK;
     tehssl_object_t scope = lambda->scope;
     tehssl_result_t r = tehssl_macro_preprocess(vm, lambda->code, scope);
-    if (r == ERROR || r == OUT_OF_MEMORY) return r;
+    TEHSSL_RETURN_ON_ERROR(r);
     tehssl_object_t ll = vm->return_value;
     // tehssl_fix_line_links(ll);
     while (ll != NULL) {
@@ -482,11 +485,10 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
                         if (fun->type == CFUNCTION) {
                             tehssl_object_t new_scope = tehssl_alloc(vm, SCOPE);
                             new_scope->parent = scope;
-                            fun->c_function(vm, new_scope);
+                            r = fun->c_function(vm, new_scope);
                         } else {
                             // reader handles scope links on lambdas
-                            tehssl_result_t r = tehssl_eval(vm, fun->lambda);
-                            if (r == ERROR || r == OUT_OF_MEMORY) return r;
+                            r = tehssl_eval(vm, fun->lambda);
                         }
                     } else {
                         return tehssl_error(vm, "undefined word", item->name);
@@ -497,7 +499,8 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
             }
         }
         ll = ll->next;
-        if (vm->result_code == ERROR || vm->result_code == OUT_OF_MEMORY) return vm->result_code;
+        TEHSSL_RETURN_ON_ERROR(vm->result_code);
+        TEHSSL_RETURN_ON_ERROR(r);
     }
     lambda = lambda->next;
     goto EVAL;
