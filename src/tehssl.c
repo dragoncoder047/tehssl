@@ -13,6 +13,10 @@
 #define TEHSSL_MIN_HEAP_SIZE 64
 #endif
 
+#ifndef TEHSSL_BUFFER_SIZE
+#define TEHSSL_BUFFER_SIZE 128
+#endif
+
 // Polyfills
 char* mystrdup(const char* str) {
     size_t len = strlen(str) + 1;
@@ -40,18 +44,13 @@ enum tehssl_flag_t {
     LITERAL_SYMBOL
 };
 
-typedef void (*tehssl_pfun_t)(char);
-typedef char (*tehssl_gfun_t)(void);
-typedef tehssl_result_t (*tehssl_fun_t)(struct tehssl_vm_t*);
-
 // Different types
 enum tehssl_typeid_t {
 //  NAME              CAR          CDR          NEXT
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
     LINE,        //                (item)       (next)
-    LAMBDA,      //                (code)       (next)
-    CLOSURE,     //   (scope)      (lambda)
+    LAMBDA,      //   (scope)      (code)       (next)
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
@@ -60,8 +59,7 @@ enum tehssl_typeid_t {
     SCOPE,       //   (functions)  (variables)  (parent)
     UFUNCTION,   //   char*        (lambda)     (next)
     CFUNCTION,   //   char*        tehssl_fun_t (next)
-    VARIABLE,    //   char*        (value)      (next)
-    RSTACK       //   int          (top)        (current)
+    VARIABLE     //   char*        (value)      (next)
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
@@ -97,6 +95,10 @@ struct tehssl_object_t {
     };
 };
 
+typedef void (*tehssl_pfun_t)(char);
+typedef char (*tehssl_gfun_t)(void);
+typedef tehssl_result_t (*tehssl_fun_t)(struct tehssl_vm_t*, struct tehssl_object_t*);
+
 // Forward references
 struct tehssl_vm_t;
 size_t tehssl_gc(struct tehssl_vm_t*);
@@ -109,7 +111,6 @@ void debug_print_type(tehssl_typeid_t t) {
         case DICT: printf("DICT"); break;
         case LINE: printf("LINE"); break;
         case LAMBDA: printf("LAMBDA"); break;
-        case CLOSURE: printf("CLOSURE"); break;
         case NUMBER: printf("NUMBER"); break;
         case SYMBOL: printf("SYMBOL"); break;
         case STRING: printf("STRING"); break;
@@ -118,7 +119,6 @@ void debug_print_type(tehssl_typeid_t t) {
         case UFUNCTION: printf("UFUNCTION"); break;
         case CFUNCTION: printf("CFUNCTION"); break;
         case VARIABLE: printf("VARIABLE"); break;
-        case RSTACK: printf("RSTACK"); break;
     }
 }
 #endif
@@ -143,7 +143,6 @@ inline bool tehssl_is_literal(struct tehssl_object_t* object) {
             return tehssl_test_flag(object, LITERAL_SYMBOL);
         case LIST:
         case DICT:
-        case LINE:
         case LAMBDA:
         case STRING:
         case STREAM:
@@ -213,17 +212,14 @@ void tehssl_markobject(struct tehssl_object_t* object) {
     switch (object->type) {
         case DICT:
         case SCOPE:
-        case LINE:
+        // case LINE:
+        case LAMBDA:
             tehssl_markobject(object->key);
             // fallthrough
         case LIST:
-        case LAMBDA:
+        case LINE:
             tehssl_markobject(object->value);
             object = object->next;
-            goto MARK;
-        case CLOSURE:
-            tehssl_markobject(object->scope);
-            object = object->lambda;
             goto MARK;
         case NUMBER:
         case SYMBOL:
@@ -232,7 +228,6 @@ void tehssl_markobject(struct tehssl_object_t* object) {
             break; // noop
         case UFUNCTION:
         case VARIABLE:
-        case RSTACK:
             tehssl_markobject(object->value);
             // fallthrough
         case CFUNCTION:
@@ -392,6 +387,20 @@ struct tehssl_object_t* tehssl_lookup(struct tehssl_object_t* scope, char* name,
     goto LOOKUP;
 }
 
+// Helper functions
+tehssl_result_t tehssl_error(struct tehssl_vm_t* vm, const char* message) {
+    vm->return_value = tehssl_make_string(vm, message);
+    return ERROR;
+}
+
+tehssl_result_t tehssl_error(struct tehssl_vm_t* vm, const char* message, char* detail) {
+    char* buf = (char*)malloc(strlen(detail) + strlen(message) + 3);
+    sprintf(buf, "%s: %s", message, detail);
+    vm->return_value = tehssl_alloc(vm, STRING);
+    vm->return_value->name = buf;
+    return ERROR;
+}
+
 
 // Evaluator
 
@@ -413,40 +422,83 @@ tehssl_result_t tehssl_macro_preprocess(struct tehssl_vm_t* vm, struct tehssl_ob
         }
         if (macro->type == UFUNCTION) {
             // not implemented
-            vm->return_value = tehssl_make_string(vm, "todo: user-defined macros");
-            return ERROR;
+            return tehssl_error(vm, "todo: user-defined macros");
         } else if (macro->type == CFUNCTION) {
             tehssl_push(vm, &vm->stack, line);
-            macro->fun(vm);
+            macro->fun(vm, scope);
             line = tehssl_pop(&vm->stack);
             tehssl_push(vm, &processed_line, line->value, LINE);
             line = line->next;
         } else {
             // something's wrong
-            vm->return_value = tehssl_make_string(vm, "error: defined non-function as a macro");
-            return ERROR;
+            return tehssl_error(vm, "defined non-function as a macro");
         }
     }
     vm->return_value = processed_line;
     return OK;
 }
 
+// void tehssl_fix_line_links(struct tehssl_object_t* line_head) {
+//     // Assuming the ->next fields are all correct, and it is a LINE
+//     // fill in the ->prev fields
+//     while (line_head != NULL) {
+//         if (line_head->next != NULL) line_head->next->prev = line_head;
+//         line_head = line_head->next;
+//     }
+// }
+
 #ifndef yield
 #define yield()
 #endif
 
-tehssl_result_t tehssl_eval(struct tehssl_vm_t* vm, struct tehssl_object_t* code, struct tehssl_object_t* scope) {
-    struct tehssl_object_t* return_stack = NULL;
+tehssl_result_t tehssl_eval(struct tehssl_vm_t* vm, struct tehssl_object_t* lambda) {
     EVAL:
     yield();
-    if (tehssl_is_literal(code)) {
-        tehssl_push(vm, &vm->stack, code);
-        code = NULL;
+    if (tehssl_is_literal(lambda)) {
+        tehssl_push(vm, &vm->stack, lambda);
+        lambda = NULL;
     }
-    if (code == NULL) {
-        if (return_stack == NULL) return OK;
-        // TODO
+    if (lambda == NULL) return OK;
+    struct tehssl_object_t* scope = lambda->scope;
+    tehssl_result_t r = tehssl_macro_preprocess(vm, lambda->code, scope);
+    if (r == ERROR || r == OUT_OF_MEMORY) return r;
+    struct tehssl_object_t* ll = vm->return_value;
+    // tehssl_fix_line_links(ll);
+    while (ll != NULL) {
+        // eval the line
+        struct tehssl_object_t* item = ll->value;
+        if (tehssl_is_literal(item)) {
+            tehssl_push(vm, &vm->stack, item);
+        } else {
+            if (item->type == SYMBOL) { // literals will have been caught by tehssl_is_literal()
+                struct tehssl_object_t* var = tehssl_lookup(scope, item->name, LOOKUP_VARIABLE);
+                if (var != NULL) {
+                    tehssl_push(vm, &vm->stack, var->value);
+                } else {
+                    struct tehssl_object_t* fun = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
+                    if (fun != NULL) {
+                        if (fun->type == CFUNCTION) {
+                            struct tehssl_object_t* new_scope = tehssl_alloc(vm, SCOPE);
+                            new_scope->parent = scope;
+                            fun->fun(vm, new_scope);
+                        } else {
+                            // reader handles scope links on lambdas
+                            tehssl_result_t r = tehssl_eval(vm, fun->lambda);
+                            if (r == ERROR || r == OUT_OF_MEMORY) return r;
+                        }
+                    } else {
+                        return tehssl_error(vm, "undefined word", item->name);
+                    }
+                }
+            } else {
+                return tehssl_error(vm, "not valid here");
+            }
+        }
+        ll = ll->next;
+        if (vm->result_code == ERROR || vm->result_code == OUT_OF_MEMORY) return vm->result_code;
     }
+    lambda = lambda->next;
+    goto EVAL;
 }
 
 // Register C functions
@@ -472,7 +524,7 @@ void tehssl_init_builtins(struct tehssl_vm_t* vm) {
 #if TEHSSL_DEBUG == 1
 // Test code
 // for pasting into https://cpp.sh/
-tehssl_result_t myfunction(struct tehssl_vm_t* vm) { return OK; }
+tehssl_result_t myfunction(struct tehssl_vm_t* vm, struct tehssl_object_t* scope) { return OK; }
 int main() {
     struct tehssl_vm_t* vm = tehssl_new_vm();
     // Make some garbage
