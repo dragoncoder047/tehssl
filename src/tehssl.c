@@ -337,6 +337,11 @@ char tehssl_peekchar(struct tehssl_vm_t* vm, tehssl_gfun_t gfun) {
 // Make objects
 
 struct tehssl_object_t* tehssl_make_string(struct tehssl_vm_t* vm, const char* string) {
+    struct tehssl_object_t* object = vm->first_object;
+    while (object != NULL) {
+        if (object->type == STRING && strcmp(object->name, string) == 0) return object;
+        object = object->next_object;
+    }
     struct tehssl_object_t* sobj = tehssl_alloc(vm, STRING);
     sobj->name = mystrdup(string);
     return sobj;
@@ -345,8 +350,13 @@ struct tehssl_object_t* tehssl_make_string(struct tehssl_vm_t* vm, const char* s
 #define SYMBOL_LITERAL true
 #define SYMBOL_WORD false
 struct tehssl_object_t* tehssl_make_symbol(struct tehssl_vm_t* vm, const char* name, bool is_literal) {
-    struct tehssl_object_t* symbol = tehssl_make_string(vm, name);
-    symbol->type = SYMBOL;
+    struct tehssl_object_t* object = vm->first_object;
+    while (object != NULL) {
+        if (object->type == SYMBOL && strcmp(object->name, string) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
+        object = object->next_object;
+    }
+    struct tehssl_object_t* sobj = tehssl_alloc(vm, SYMBOL);
+    sobj->name = mystrdup(string);
     if (is_literal) tehssl_set_flag(symbol, LITERAL_SYMBOL);
     return symbol;
 }
