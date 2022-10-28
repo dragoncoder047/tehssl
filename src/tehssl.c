@@ -461,13 +461,15 @@ tehssl_result_t myfunction(struct tehssl_vm_t* vm) { return OK; }
 int main() {
     struct tehssl_vm_t* vm = tehssl_new_vm();
     // Make some garbage
-    tehssl_make_number(vm, 123);
-    tehssl_make_number(vm, 456.789123);
-    tehssl_make_string(vm, "i am cow hear me moo");
-    tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
-    // This is not garbage, it is on the stack now
-    tehssl_push(vm, &vm->stack, tehssl_make_number(vm, 1.7E+123));
-    tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
+    for (int i = 0; i < 100; i++) {
+        tehssl_make_number(vm, 123);
+        tehssl_make_number(vm, 456.789123);
+        tehssl_make_string(vm, "i am cow hear me moo");
+        tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
+        // This is not garbage, it is on the stack now
+        tehssl_push(vm, &vm->stack, tehssl_make_number(vm, 1.7E+123));
+        tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
+    }
     tehssl_register(vm, "MyFunction", myfunction, NOT_MACRO);
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
