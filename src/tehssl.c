@@ -362,6 +362,11 @@ struct tehssl_object_t* tehssl_make_symbol(struct tehssl_vm_t* vm, const char* n
 }
 
 struct tehssl_object_t* tehssl_make_number(struct tehssl_vm_t* vm, double n) {
+    struct tehssl_object_t* object = vm->first_object;
+    while (object != NULL) {
+        if (object->type == NUMBER && (uint64_t)n == (uint64_t)object->number) return object;
+        object = object->next_object;
+    }
     struct tehssl_object_t* sobj = tehssl_alloc(vm, NUMBER);
     sobj->number = n;
     return sobj;
