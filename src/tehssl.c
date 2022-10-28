@@ -26,7 +26,6 @@ char* mystrdup(const char* str) {
 }
 
 // Datatypes
-
 enum tehssl_result_t {
     OK,
     ERROR,
@@ -37,7 +36,6 @@ enum tehssl_result_t {
 };
 
 #define TEHSSL_RETURN_ON_ERROR(r) do { if ((r) == ERROR || (r) == OUT_OF_MEMORY) return (r); } while (false)
-
 
 typedef uint16_t tehssl_flags_t;
 enum tehssl_flag_t {
@@ -74,7 +72,6 @@ typedef char (*tehssl_gfun_t)(void);
 typedef tehssl_result_t (*tehssl_fun_t)(tehssl_vm_t, tehssl_object_t);
 
 // Main OBJECT type
-
 struct tehssl_object {
     tehssl_typeid_t type;
     tehssl_flags_t flags;
@@ -176,7 +173,6 @@ inline bool tehssl_is_literal(tehssl_object_t object) {
 void tehssl_set_flag(tehssl_object_t object, tehssl_flag_t f) { object->flags |= (1 << f); }
 void tehssl_clear_flag(tehssl_object_t object, tehssl_flag_t f) { object->flags &= ~(1 << f); }
 bool tehssl_test_flag(tehssl_object_t object, tehssl_flag_t f) { return object->flags & (1 << f); }
-
 
 // Alloc
 tehssl_vm_t tehssl_new_vm() {
@@ -294,7 +290,6 @@ void tehssl_destroy(tehssl_vm_t vm) {
 }
 
 // Push / Pop (for stacks)
-
 inline void tehssl_push(tehssl_vm_t vm, tehssl_object_t* stack, tehssl_object_t item, tehssl_typeid_t t) {
     tehssl_object_t cell = tehssl_alloc(vm, t);
     cell->value = item;
@@ -314,7 +309,6 @@ inline tehssl_object_t tehssl_pop(tehssl_object_t* stack) {
 }
 
 // Stream read and write functions
-
 char tehssl_getchar(tehssl_vm_t vm, tehssl_gfun_t gfun) {
     if (vm->last_char) {
         char ch = vm->last_char;
@@ -335,7 +329,6 @@ char tehssl_peekchar(tehssl_vm_t vm, tehssl_gfun_t gfun) {
 }
 
 // Make objects
-
 tehssl_object_t tehssl_make_string(tehssl_vm_t vm, const char* string) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
@@ -372,9 +365,7 @@ tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
     return sobj;
 }
 
-
 // Lookup values in scope
-
 #define LOOKUP_FUNCTION 0
 #define LOOKUP_MACRO 1
 #define LOOKUP_VARIABLE 2
@@ -406,11 +397,9 @@ tehssl_result_t tehssl_error(tehssl_vm_t vm, const char* message, char* detail) 
     return ERROR;
 }
 
-
 // Evaluator
-
-// This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
 tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
+    // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
     tehssl_object_t processed_line = NULL;
     while (line != NULL) {
         tehssl_object_t item = line->value;
@@ -508,8 +497,8 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
 
 // Reader
 
-// Register C functions
 
+// Register C functions
 #define IS_MACRO true
 #define NOT_MACRO false
 void tehssl_register(tehssl_vm_t vm, const char* name, tehssl_fun_t fun, bool is_macro) {
