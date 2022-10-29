@@ -50,14 +50,14 @@ enum tehssl_typeid {
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
     LINE,        //                (item)       (next)
-    LAMBDA,      //   (scope)      (code)       (next)
+    BLOCK,       //   (scope)      (code)       (next)
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
     STREAM,      //   char*        streamfun_t  (state)              char* is name
     // Special internal types
     SCOPE,       //   (functions)  (variables)  (parent)
-    UFUNCTION,   //   char*        (lambda)     (next)
+    UFUNCTION,   //   char*        (block)      (next)
     CFUNCTION,   //   char*        cfun_t       (next)
     VARIABLE     //   char*        (value)      (next)
 };
@@ -92,7 +92,7 @@ struct tehssl_object {
                 tehssl_object_t item;
                 tehssl_object_t code;
                 tehssl_object_t variables;
-                tehssl_object_t lambda;
+                tehssl_object_t block;
                 tehssl_streamfun_t stream_function;
                 tehssl_cfun_t c_function;
             };
@@ -128,7 +128,7 @@ void debug_print_type(tehssl_typeid_t t) {
         case LIST: printf("LIST"); break;
         case DICT: printf("DICT"); break;
         case LINE: printf("LINE"); break;
-        case LAMBDA: printf("LAMBDA"); break;
+        case BLOCK: printf("BLOCK"); break;
         case NUMBER: printf("NUMBER"); break;
         case SYMBOL: printf("SYMBOL"); break;
         case STRING: printf("STRING"); break;
@@ -161,7 +161,7 @@ inline bool tehssl_is_literal(tehssl_object_t object) {
             return tehssl_test_flag(object, LITERAL_SYMBOL);
         case LIST:
         case DICT:
-        case LAMBDA:
+        case BLOCK:
         case STRING:
         case STREAM:
         case NUMBER:
@@ -216,7 +216,7 @@ void tehssl_markobject(tehssl_object_t object) {
         case DICT:
         case SCOPE:
         // case LINE:
-        case LAMBDA:
+        case BLOCK:
             tehssl_markobject(object->key);
             // fallthrough
         case LIST:
@@ -458,16 +458,16 @@ tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, te
 #define yield()
 #endif
 
-tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
+tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
     EVAL:
     yield();
-    if (tehssl_is_literal(lambda)) {
-        tehssl_push(vm, &vm->stack, lambda);
-        lambda = NULL;
+    if (tehssl_is_literal(block)) {
+        tehssl_push(vm, &vm->stack, block);
+        block = NULL;
     }
-    if (lambda == NULL) return OK;
-    tehssl_object_t scope = lambda->scope;
-    tehssl_result_t r = tehssl_macro_preprocess(vm, lambda->code, scope);
+    if (block == NULL) return OK;
+    tehssl_object_t scope = block->scope;
+    tehssl_result_t r = tehssl_macro_preprocess(vm, block->code, scope);
     TEHSSL_RETURN_ON_ERROR(r);
     tehssl_object_t ll = vm->return_value;
     // tehssl_fix_line_links(ll);
@@ -490,7 +490,7 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
                             r = fun->c_function(vm, new_scope);
                         } else {
                             // reader handles scope links on lambdas
-                            r = tehssl_eval(vm, fun->lambda);
+                            r = tehssl_eval(vm, fun->block);
                         }
                     } else {
                         return tehssl_error(vm, "undefined word", item->name);
@@ -504,7 +504,7 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
         TEHSSL_RETURN_ON_ERROR(vm->result_code);
         TEHSSL_RETURN_ON_ERROR(r);
     }
-    lambda = lambda->next;
+    block = block->next;
     goto EVAL;
 }
 
