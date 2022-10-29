@@ -26,7 +26,7 @@ char* mystrdup(const char* str) {
 }
 
 // Datatypes
-enum tehssl_result_t {
+enum tehssl_result {
     OK,
     ERROR,
     RETURN,
@@ -37,8 +37,7 @@ enum tehssl_result_t {
 
 #define TEHSSL_RETURN_ON_ERROR(r) do { if ((r) == ERROR || (r) == OUT_OF_MEMORY) return (r); } while (false)
 
-typedef uint16_t tehssl_flags_t;
-enum tehssl_flag_t {
+enum tehssl_flag {
     GC_MARK,
     PRINTER_MARK,
     MACRO_FUNCTION,
@@ -46,7 +45,7 @@ enum tehssl_flag_t {
 };
 
 // Different types
-enum tehssl_typeid_t {
+enum tehssl_typeid {
 //  Type      Cell--> A            B            C
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
@@ -69,6 +68,10 @@ typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
 typedef char (*tehssl_streamfun_t)(char, bool, void*);
 typedef tehssl_result_t (*tehssl_cfun_t)(tehssl_vm_t, tehssl_object_t);
+typedef uint16_t tehssl_flags_t;
+typedef enum tehssl_typeid tehssl_typeid_t;
+typedef enum tehssl_flag tehssl_flag_t;
+typedef enum tehssl_result tehssl_result_t;
 
 // Main OBJECT type
 struct tehssl_object {
