@@ -1,13 +1,13 @@
-Def Fibbonacci (
+Def Fibbonacci {
     Let N be from the stack;
-    Do If < 2 N (
+    Do If < 2 N {
         1
-    ) else (
+    } else {
         Fibbonacci of - 1 N;
         Fibbonacci of - 2 N;
         +;
-    )
-);
+    }
+};
 
 Print "The 35th Fibbonacci number is: ";
 Print the Fibbonacci of 35;
