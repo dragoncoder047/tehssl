@@ -67,7 +67,7 @@ enum tehssl_typeid_t {
 // Typedefs
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
-typedef char (*tehssl_streamfun_t)(char*, bool, void*);
+typedef char (*tehssl_streamfun_t)(char, bool, void*);
 typedef tehssl_result_t (*tehssl_cfun_t)(tehssl_vm_t, tehssl_object_t);
 
 // Main OBJECT type
@@ -328,12 +328,12 @@ char tehssl_getchar(tehssl_vm_t vm, tehssl_object_t stream) {
 
 void tehssl_putchar(char ch, tehssl_object_t stream) {
     if (stream->type != STREAM) return;
-    return stream->stream_function(ch, STREAM_WRITE, stream->state);
+    stream->stream_function(ch, STREAM_WRITE, stream->state);
 }
 
 char tehssl_peekchar(tehssl_vm_t vm, tehssl_object_t stream) {
     if (vm->last_char) return vm->last_char;
-    if (stream->type != STREAM) return;
+    if (stream->type != STREAM) return -1;
     vm->last_char = stream->stream_function(0, STREAM_READ, stream->state);
     return vm->last_char;
 }
