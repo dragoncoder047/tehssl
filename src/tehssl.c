@@ -55,11 +55,11 @@ enum tehssl_typeid_t {
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
-    STREAM,      //   char*        pfun_t       gfun_t              char* is name
+    STREAM,      //   char*        streamfun_t  (state)              char* is name
     // Special internal types
     SCOPE,       //   (functions)  (variables)  (parent)
     UFUNCTION,   //   char*        (lambda)     (next)
-    CFUNCTION,   //   char*        tehssl_fun_t (next)
+    CFUNCTION,   //   char*        cfun_t       (next)
     VARIABLE     //   char*        (value)      (next)
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
@@ -67,9 +67,8 @@ enum tehssl_typeid_t {
 // Typedefs
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
-typedef void (*tehssl_pfun_t)(char);
-typedef char (*tehssl_gfun_t)(void);
-typedef tehssl_result_t (*tehssl_fun_t)(tehssl_vm_t, tehssl_object_t);
+typedef char (*tehssl_streamfun_t)(char*, bool, void*);
+typedef tehssl_result_t (*tehssl_cfun_t)(tehssl_vm_t, tehssl_object_t);
 
 // Main OBJECT type
 struct tehssl_object {
@@ -91,13 +90,13 @@ struct tehssl_object {
                 tehssl_object_t code;
                 tehssl_object_t variables;
                 tehssl_object_t lambda;
-                tehssl_pfun_t pfun;
-                tehssl_fun_t c_function;
+                tehssl_streamfun_t stream_function;
+                tehssl_cfun_t c_function;
             };
             union {
                 tehssl_object_t next;
                 tehssl_object_t parent;
-                tehssl_gfun_t gfun;
+                void* state;
             };
         };
     };
@@ -259,6 +258,12 @@ void tehssl_sweep(tehssl_vm_t vm) {
                 #endif
                 free(unreached->name);
             }
+            if (unreached->type == STREAM) {
+                #if TEHSSL_DEBUG == 1
+                printf(" with state");
+                #endif
+                free(unreached->state);
+            }
             #if TEHSSL_DEBUG == 1
             if (unreached->type == NUMBER) printf(": %g", unreached->number);
             putchar('\n');
@@ -309,22 +314,27 @@ inline tehssl_object_t tehssl_pop(tehssl_object_t* stack) {
 }
 
 // Stream read and write functions
-char tehssl_getchar(tehssl_vm_t vm, tehssl_gfun_t gfun) {
+#define STREAM_READ false
+#define STREAM_WRITE true
+char tehssl_getchar(tehssl_vm_t vm, tehssl_object_t stream) {
     if (vm->last_char) {
         char ch = vm->last_char;
         vm->last_char = 0;
         return ch;
     }
-    return gfun();
+    if (stream->type != STREAM) return -1;
+    return stream->stream_function(0, STREAM_READ, stream->state);
 }
 
-void tehssl_putchar(char ch, tehssl_pfun_t pfun) {
-    pfun(ch);
+void tehssl_putchar(char ch, tehssl_object_t stream) {
+    if (stream->type != STREAM) return;
+    return stream->stream_function(ch, STREAM_WRITE, stream->state);
 }
 
-char tehssl_peekchar(tehssl_vm_t vm, tehssl_gfun_t gfun) {
+char tehssl_peekchar(tehssl_vm_t vm, tehssl_object_t stream) {
     if (vm->last_char) return vm->last_char;
-    vm->last_char = gfun();
+    if (stream->type != STREAM) return;
+    vm->last_char = stream->stream_function(0, STREAM_READ, stream->state);
     return vm->last_char;
 }
 
@@ -501,7 +511,7 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t lambda) {
 // Register C functions
 #define IS_MACRO true
 #define NOT_MACRO false
-void tehssl_register(tehssl_vm_t vm, const char* name, tehssl_fun_t fun, bool is_macro) {
+void tehssl_register(tehssl_vm_t vm, const char* name, tehssl_cfun_t fun, bool is_macro) {
     if (vm->global_scope == NULL) {
         vm->global_scope = tehssl_alloc(vm, SCOPE);
     }
