@@ -87,7 +87,7 @@ typedef struct tehssl_vm *tehssl_vm_t;
 typedef struct tehssl_stream_state *tehssl_stream_state_t;
 typedef char (*tehssl_streamfun_t)(char, tehssl_stream_action_t, tehssl_stream_state_t);
 typedef tehssl_result_t (*tehssl_cfun_t)(tehssl_vm_t, tehssl_object_t);
-typedef void (*tehssl_typefun_t)(tehssl_vm_t, tehssl_type_action_t, tehssl_object_t);
+typedef void (*tehssl_typefun_t)(tehssl_vm_t, tehssl_type_action_t, tehssl_object_t, void*);
 typedef uint16_t tehssl_flags_t;
 
 // Main OBJECT type
@@ -305,12 +305,12 @@ void tehssl_sweep(tehssl_vm_t vm) {
                 }
                 if (type_handle == NULL) {
                     #ifdef TEHSSL_DEBUG
-                    printf("\nWARNING: freeing a custom type with no registered handler function... may cause memory leaks\n");
+                    printf("\nWARNING: freeing a custom type '%s' with no registered handler function... may cause memory leaks\n", unreached->name);
                     #endif
                 } else {
                     free(unreached->name);
                     unreached->name = NULL;
-                    type_handle->type_function(vm, CTYPE_DESTROY, unreached);
+                    type_handle->type_function(vm, CTYPE_DESTROY, unreached, NULL);
                 }
             }
             if (tehssl_has_name(unreached)) {
@@ -429,6 +429,23 @@ tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
     return sobj;
 }
 
+tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, const char* type, void* data) {
+    tehssl_object_t obj = tehssl_alloc(vm, USERTYPE);
+    tehssl_object_t typefun = vm->type_functions;
+    while (typefun != NULL) {
+        if (strcmp(type, typefun->name) == 0) break;
+        typefun = typefun->next;
+    }
+    if (typefun == NULL) {
+        #ifdef TEHSSL_DEBUG
+        printf("\nWARNING: allocating a custom type '%s' with no registered type function\n", type);
+        #endif
+        return obj;
+    }
+    typefun->type_function(vm, CTYPE_INIT, obj, data);
+    return obj;
+}
+
 // Lookup values in scope
 #define LOOKUP_FUNCTION 0
 #define LOOKUP_MACRO 1
@@ -460,6 +477,35 @@ tehssl_result_t tehssl_error(tehssl_vm_t vm, const char* message, char* detail) 
     vm->return_value->name = buf;
     return ERROR;
 }
+
+size_t tehssl_list_length(tehssl_object_t list) {
+    size_t sz = 0;
+    while (list != NULL) {
+        sz++;
+        list = list->next;
+    }
+    return sz;
+}
+
+tehssl_object_t tehssl_list_get_item(tehssl_object_t list, size_t i) {
+    while (list != NULL && i > 0) {
+        i--;
+        list = list->next;
+    }
+    if (list == NULL) return NULL;
+    return list->value;
+}
+
+void tehssl_list_set_item(tehssl_object_t list, size_t i, tehssl_object_t new) {
+    while (list != NULL && i > 0) {
+        i--;
+        list = list->next;
+    }
+    if (list != NULL) list->value = new;
+}
+
+// C functions
+
 
 // Evaluator
 tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
@@ -536,9 +582,7 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
                     tehssl_object_t fun = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
                     if (fun != NULL) {
                         if (fun->type == CFUNCTION) {
-                            tehssl_object_t new_scope = tehssl_alloc(vm, SCOPE);
-                            new_scope->parent = scope;
-                            r = fun->c_function(vm, new_scope);
+                            r = fun->c_function(vm, scope);
                         } else {
                             // reader handles scope links on lambda blocks
                             r = tehssl_eval(vm, fun->block);
@@ -577,7 +621,7 @@ void tehssl_register_word(tehssl_vm_t vm, const char* name, tehssl_cfun_t fun, b
     vm->global_scope->functions = fobj;
 }
 
-// Regsiter C types
+// Register C types
 void tehssl_register_type(tehssl_vm_t vm, const char* name, tehssl_typefun_t fun) {
     tehssl_object_t t = tehssl_alloc(vm, TFUNCTION);
     t->name = mystrdup(name);
