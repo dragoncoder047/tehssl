@@ -13,8 +13,8 @@
 #define TEHSSL_MIN_HEAP_SIZE 64
 #endif
 
-#ifndef TEHSSL_BUFFER_SIZE
-#define TEHSSL_BUFFER_SIZE 128
+#ifndef TEHSSL_CHUNK_SIZE
+#define TEHSSL_CHUNK_SIZE 128
 #endif
 
 // Polyfills
@@ -36,6 +36,7 @@ enum tehssl_result {
 };
 
 #define TEHSSL_RETURN_ON_ERROR(r) do { if ((r) == ERROR || (r) == OUT_OF_MEMORY) return (r); } while (false)
+#define TEHSSL_POP_AND_RETURN_ON_ERROR(r, stack) do { if ((r) == ERROR || (r) == OUT_OF_MEMORY) tehssl_pop(&(stack)); return (r); } while (false)
 
 enum tehssl_flag {
     GC_MARK,
@@ -429,6 +430,14 @@ tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
     return sobj;
 }
 
+tehssl_object_t tehssl_make_stream(tehssl_vm_t vm, char* name, tehssl_streamfun_t streamfun, tehssl_stream_state_t state) {
+    tehssl_object_t sobj = tehssl_alloc(vm, STREAM);
+    sobj->name = mystrdup(name);
+    sobj->stream_function = streamfun;
+    sobj->state = state;
+    return sobj;
+}
+
 tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, const char* type, void* data) {
     tehssl_object_t obj = tehssl_alloc(vm, USERTYPE);
     tehssl_object_t typefun = vm->type_functions;
@@ -482,6 +491,7 @@ bool tehssl_compare_numbers(double a, double b, bool lt, bool eq, bool gt) {
     if (a < b) return lt;
     if (a == b) return eq;
     if (a > b) return gt;
+    return false; // unreachable, just to satisfy compiler
 }
 
 bool tehssl_compare_strings(char* a, char* b, bool lt, bool eq, bool gt) {
@@ -489,6 +499,7 @@ bool tehssl_compare_strings(char* a, char* b, bool lt, bool eq, bool gt) {
     if (r < 0) return lt;
     if (r == 0) return eq;
     if (r > 0) return gt;
+    return false; // unreachable, just to satisfy compiler
 }
 
 bool tehssl_equal(tehssl_object_t a, tehssl_object_t b) {
@@ -542,16 +553,16 @@ tehssl_object_t tehssl_list_get(tehssl_object_t list, int i) {
     return list->value;
 }
 
-void tehssl_list_set(tehssl_object_t list, int i, tehssl_object_t new) {
+void tehssl_list_set(tehssl_object_t list, int i, tehssl_object_t new_value) {
     if (i < 0) {
-        tehssl_list_set(list, tehssl_list_length(list) + i, new);
+        tehssl_list_set(list, tehssl_list_length(list) + i, new_value);
         return;
     }
     while (list != NULL && i > 0) {
         i--;
         list = list->next;
     }
-    if (list != NULL) list->value = new;
+    if (list != NULL) list->value = new_value;
 }
 
 tehssl_object_t tehssl_dict_get(tehssl_object_t dict, tehssl_object_t key) {
@@ -563,7 +574,7 @@ tehssl_object_t tehssl_dict_get(tehssl_object_t dict, tehssl_object_t key) {
     return dict->value;
 }
 
-void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, tehssl_object_t new) {
+void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, tehssl_object_t new_value) {
     while (true) {
         if (tehssl_equal(dict->key, key)) break;
         if (dict->next == NULL) { // Exhausted all entries
@@ -573,44 +584,71 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
         }
         dict = dict->next;
     }
-    dict->value = new;
+    dict->value = new_value;
 }
 
 // C functions
 
 
+char tehssl_stringstream_fun(char print, tehssl_stream_action_t action, tehssl_stream_state_t state) {
+    if (action == STREAM_READ) {
+        size_t len = strlen((char*)state->string_or_file);
+        if (state->position >= len) {
+            return -1;
+        } else {
+            char c = ((char*)state->string_or_file)[state->position];
+            state->position++;
+            return c;
+        }
+    }
+    return 0;
+}
+
+tehssl_object_t tehssl_make_stringstream(tehssl_vm_t vm, char* string) {
+    tehssl_stream_state_t ss = (tehssl_stream_state_t)malloc(sizeof(struct tehssl_stream_state));
+    ss->string_or_file = (void*)string;
+    ss->position = 0;
+    tehssl_object_t s = tehssl_alloc(vm, STREAM);
+    s->name = mystrdup("stringstream");
+    s->stream_function = tehssl_stringstream_fun;
+    s->state = ss;
+    return s;
+}
+
+
 // Evaluator
 tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
     // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
-    tehssl_object_t processed_line = NULL;
+    tehssl_push(vm, &vm->gc_stack, NULL);
     while (line != NULL) {
         tehssl_object_t item = line->value;
         if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
-            tehssl_push(vm, &processed_line, item, LINE);
+            tehssl_push(vm, &vm->gc_stack->value, item, LINE);
             line = line->next;
             continue;
         }
         tehssl_object_t macro = tehssl_lookup(scope, item->name, LOOKUP_MACRO);
         if (macro == NULL) {
-            tehssl_push(vm, &processed_line, item, LINE);
+            tehssl_push(vm, &vm->gc_stack->value, item, LINE);
             line = line->next;
             continue;
         }
         if (macro->type == UFUNCTION) {
             // not implemented
+            tehssl_pop(&vm->gc_stack);
             return tehssl_error(vm, "todo: user-defined macros");
         } else if (macro->type == CFUNCTION) {
             tehssl_push(vm, &vm->stack, line);
             macro->c_function(vm, scope);
             line = tehssl_pop(&vm->stack);
-            tehssl_push(vm, &processed_line, line->value, LINE);
+            tehssl_push(vm, &vm->gc_stack->value, line->value, LINE);
             line = line->next;
         } else {
             // something's wrong
             return tehssl_error(vm, "defined non-function as a macro");
         }
     }
-    vm->return_value = processed_line;
+    vm->return_value = tehssl_pop(&vm->gc_stack);
     return OK;
 }
 
@@ -630,14 +668,18 @@ tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, te
 tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
     EVAL:
     yield();
+    tehssl_push(vm, &vm->gc_stack, block);
     if (tehssl_is_literal(block)) {
         tehssl_push(vm, &vm->stack, block);
         block = NULL;
     }
-    if (block == NULL) return OK;
+    if (block == NULL) {
+        tehssl_pop(&vm->gc_stack);
+        return OK;
+    }
     tehssl_object_t scope = block->scope;
     tehssl_result_t r = tehssl_macro_preprocess(vm, block->code, scope);
-    TEHSSL_RETURN_ON_ERROR(r);
+    TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
     tehssl_object_t ll = vm->return_value;
     // tehssl_fix_line_links(ll);
     while (ll != NULL) {
@@ -668,14 +710,139 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
             }
         }
         ll = ll->next;
-        TEHSSL_RETURN_ON_ERROR(vm->result_code);
-        TEHSSL_RETURN_ON_ERROR(r);
+        TEHSSL_POP_AND_RETURN_ON_ERROR(vm->result_code, vm->gc_stack);
+        TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
     }
     block = block->next;
     goto EVAL;
 }
 
-// Reader
+// Compiler
+tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, tehssl_object_t scope, char stop) {
+    if (stream == NULL) return OK;
+    if (stream->type != STREAM) return tehssl_error(vm, "can't compile from a non-stream");
+    char* buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
+    size_t buffersz = TEHSSL_CHUNK_SIZE;
+    char ch;
+    tehssl_object_t out_block;
+    tehssl_object_t out_block_tail;
+    tehssl_object_t current_line;
+    tehssl_object_t current_line_tail;
+    NEXTTOKEN:
+    do {
+        ch = tehssl_getchar(vm, stream);
+        if (ch == stop) {
+            free(buffer);
+            return out_block;
+        }
+    } while (strchr(" \t\n\r\v", ch) != NULL);
+    // Get one token
+    tehssl_object_t item = NULL;
+    bool is_literal_symbol = false;
+    if (ch == '{') {
+        tehssl_object_t newscope = tehssl_alloc(vm, SCOPE);
+        newscope->parent = scope;
+        item = tehssl_compile_until(vm, stream, scope, '}');
+    }
+    // Handle ; at end of line
+    else if (ch == ';') {
+        tehssl_object_t newln = tehssl_alloc(vm, BLOCK);
+        // TODO: finish nexting block
+    }
+    // TODO:  [  and  (  syntactic sugar for List and Point
+    // Handle extraneous close braces
+    else if (ch == '}') {
+        free(buffer);
+        return tehssl_error(vm, "unexpected '}'");
+    }
+    else if (ch == ']') {
+        free(buffer);
+        return tehssl_error(vm, "unexpected ']'");
+    }
+    else if (ch == ')') {
+        free(buffer);
+        return tehssl_error(vm, "unexpected ')'");
+    }
+    // Informal syntax: lowercase word
+    else if ('a' <= ch && ch <= 'z') {
+        do {
+            ch = tehssl_getchar(vm, stream);
+            if (ch == stop) {
+                free(buffer);
+                return out_block;
+            }
+        } while (strchr(" \t\n\r\v", ch) == NULL);
+        goto NEXTTOKEN;
+    }
+    // Symbol and normal word
+    else {
+        size_t i = 0;
+        size_t tildes = 0;
+        if (ch == '\\') is_literal_symbol = true;
+        else {
+            i = 1;
+            buffer[0] = ch;
+        }
+        if (ch == '~') tildes++;
+        // fill buffer, expand as needed
+        while (true) {
+            if (i == buffersz) {
+                buffersz += TEHSSL_CHUNK_SIZE;
+                buffer = realloc(buffer, buffersz);
+            }
+            ch = tehssl_getchar(vm, stream);
+            if (ch == '~') tildes++;
+            if (tildes == 2) {
+                // Lop comment until end of line
+                do {
+                    ch = tehssl_getchar(vm, stream);
+                    if (ch == stop) {
+                        free(buffer);
+                        return out_block;
+                    }
+                } while (strchr("\r\n", ch) == NULL);
+                goto NEXTTOKEN;
+            }
+            if (ch == stop) {
+                free(buffer);
+                return out_block;
+            }
+            if (strchr(" \t\n\r\v", ch) != NULL) {
+                buffer[i] = 0;
+                break;
+            }
+            buffer[i] = ch;
+            i++;
+        }
+    }
+    // Try number
+    double n;
+    int good = sscanf(buffer, "%g", &n);
+    if (good == 1) {
+        item = tehssl_alloc(vm, NUMBER);
+        item->number = n;
+    }
+    // It's a symbol
+    else {
+        item = tehssl_alloc(vm, SYMBOL);
+        item->name = buffer;
+        if (is_literal_symbol) tehssl_set_flag(item, LITERAL_SYMBOL);
+    }
+    buffer = malloc(TEHSSL_CHUNK_SIZE);
+    tehssl_object_t newb = tehssl_alloc(vm, LINE);
+    newb->item = item;
+    current_line_tail->next = newb;
+    current_line_tail = newb;
+    // TODO: finish nexting line
+    goto NEXTTOKEN;
+}
+
+tehssl_result_t tehssl_run_string(tehssl_vm_t vm, const char* string) {
+    tehssl_object_t ss = tehssl_make_stringstream(vm, mystrdup(string));
+    tehssl_result_t r = tehssl_compile_until(vm, ss, vm->global_scope, 0);
+    TEHSSL_RETURN_ON_ERROR(r);
+    return tehssl_eval(vm, vm->return_value);
+}
 
 
 // Register C functions
