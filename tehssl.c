@@ -1,11 +1,11 @@
 #ifdef __cplusplus
 #include <cstring>
 #include <iostream>
-#define TEHSSL_DEBUG 1
+#define TEHSSL_DEBUG
 #else
 #include <stdlib.h>
 #include <string.h>
-#define TEHSSL_DEBUG 0
+#undef TEHSSL_DEBUG
 #endif
 
 // Config options
@@ -148,7 +148,7 @@ struct tehssl_vm {
 size_t tehssl_gc(tehssl_vm_t);
 bool tehssl_test_flag(tehssl_object_t object, tehssl_flag_t f);
 
-#if TEHSSL_DEBUG == 1
+#ifdef TEHSSL_DEBUG
 void debug_print_type(tehssl_typeid_t t) {
     switch (t) {
         case LIST: printf("LIST"); break;
@@ -285,11 +285,11 @@ void tehssl_sweep(tehssl_vm_t vm) {
         if (!tehssl_test_flag(*object, GC_MARK)) {
             tehssl_object_t unreached = *object;
             *object = unreached->next_object;
-            #if TEHSSL_DEBUG == 1
+            #ifdef TEHSSL_DEBUG
             printf("Freeing a "); debug_print_type(unreached->type);
             #endif
             if (unreached->type == STREAM) {
-                #if TEHSSL_DEBUG == 1
+                #ifdef TEHSSL_DEBUG
                 printf(" +streamstate");
                 #endif
                 if (unreached->state != NULL) free(unreached->state->string_or_file);
@@ -314,13 +314,13 @@ void tehssl_sweep(tehssl_vm_t vm) {
                 }
             }
             if (tehssl_has_name(unreached)) {
-                #if TEHSSL_DEBUG == 1
+                #ifdef TEHSSL_DEBUG
                 printf(" name-> \"%s\"", unreached->name);
                 #endif
                 free(unreached->name);
                 unreached->name = NULL;
             }
-            #if TEHSSL_DEBUG == 1
+            #ifdef TEHSSL_DEBUG
             if (unreached->type == NUMBER) printf(" number-> %g", unreached->number);
             #endif
             free(unreached);
@@ -590,7 +590,7 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
     // TODO
 }
 
-#if TEHSSL_DEBUG == 1
+#ifdef TEHSSL_DEBUG
 // Test code
 // for pasting into https://cpp.sh/
 tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { return OK; }
