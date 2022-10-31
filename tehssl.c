@@ -478,8 +478,53 @@ tehssl_result_t tehssl_error(tehssl_vm_t vm, const char* message, char* detail) 
     return ERROR;
 }
 
-size_t tehssl_list_length(tehssl_object_t list) {
-    size_t sz = 0;
+bool tehssl_compare_numbers(double a, double b, bool lt, bool eq, bool gt) {
+    if (a < b) return lt;
+    if (a == b) return eq;
+    if (a > b) return gt;
+}
+
+bool tehssl_compare_strings(char* a, char* b, bool lt, bool eq, bool gt) {
+    int r = strcmp(a, b);
+    if (r < 0) return lt;
+    if (r == 0) return eq;
+    if (r > 0) return gt;
+}
+
+bool tehssl_equal(tehssl_object_t a, tehssl_object_t b) {
+    CMP:
+    if (a == b) return true; // Same object
+    if (a == NULL || b == NULL) return false; // Null
+    if (a->type != b->type) return false; // Different type
+    switch (a->type) {
+        case DICT:
+        case SCOPE:
+        case UFUNCTION:
+        case VARIABLE:
+        // case LINE:
+        case BLOCK:
+            if (!tehssl_equal(a->key, b->key)) return false;
+            // fallthrough
+        case LIST:
+        case LINE:
+        case USERTYPE:
+        case CFUNCTION:
+        case TFUNCTION:
+            if (!tehssl_equal(a->value, b->value)) return false;
+            a = a->next;
+            b = b->next;
+            goto CMP;
+        case NUMBER:
+            return tehssl_compare_numbers(a->number, b->number, false, true, false);
+        case SYMBOL:
+        case STRING:
+        case STREAM:
+            return tehssl_compare_strings(a->name, b->name, false, true, false);
+    }
+}
+
+int tehssl_list_length(tehssl_object_t list) {
+    int sz = 0;
     while (list != NULL) {
         sz++;
         list = list->next;
@@ -487,7 +532,8 @@ size_t tehssl_list_length(tehssl_object_t list) {
     return sz;
 }
 
-tehssl_object_t tehssl_list_get_item(tehssl_object_t list, size_t i) {
+tehssl_object_t tehssl_list_get(tehssl_object_t list, int i) {
+    if (i < 0) return tehssl_list_get(list, tehssl_list_length(list) + i);
     while (list != NULL && i > 0) {
         i--;
         list = list->next;
@@ -496,12 +542,38 @@ tehssl_object_t tehssl_list_get_item(tehssl_object_t list, size_t i) {
     return list->value;
 }
 
-void tehssl_list_set_item(tehssl_object_t list, size_t i, tehssl_object_t new) {
+void tehssl_list_set(tehssl_object_t list, int i, tehssl_object_t new) {
+    if (i < 0) {
+        tehssl_list_set(list, tehssl_list_length(list) + i, new);
+        return;
+    }
     while (list != NULL && i > 0) {
         i--;
         list = list->next;
     }
     if (list != NULL) list->value = new;
+}
+
+tehssl_object_t tehssl_dict_get(tehssl_object_t dict, tehssl_object_t key) {
+    while (dict != NULL) {
+        if (tehssl_equal(dict->key, key)) break;
+        dict = dict->next;
+    }
+    if (dict == NULL) return NULL;
+    return dict->value;
+}
+
+void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, tehssl_object_t new) {
+    while (true) {
+        if (tehssl_equal(dict->key, key)) break;
+        if (dict->next == NULL) { // Exhausted all entries
+            tehssl_object_t newentry = tehssl_alloc(vm, DICT);
+            newentry->key = key;
+            dict->next = newentry;
+        }
+        dict = dict->next;
+    }
+    dict->value = new;
 }
 
 // C functions
