@@ -507,6 +507,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
         case SYMBOL:
         case STRING:
         case STREAM:
+        case TOKEN:
             return tehssl_compare_strings(a->name, b->name, false, true, false);
         case USERTYPE:
             if (strcmp(a->name, b->name) != 0) return false;
