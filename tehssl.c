@@ -717,24 +717,19 @@ char* tehssl_next_token(FILE* file) {
     size_t buffersz = TEHSSL_CHUNK_SIZE;
     size_t i = 0;
     bool comment = false;
-    bool informal = false;
     bool string = false;
     NEXTCHAR:
     char ch = fgetc(file);
-    if (ch != EOF) printf("\ni=%d CH=%c: ", i, ch); else printf("ch=EOF, ");
-    if (comment || informal) {
-        printf("i/c, ");
+    // if (ch != EOF) printf("\ni=%d CH=%c: ", i, ch); else printf("ch=EOF, ");
+    if (comment) {
+        // printf("c, ");
         // exit comment at EOL
-        if (comment && (ch == '\n' || ch == EOF)) comment = false;
-        // exit informal at space
-        else if (informal && (isspace(ch) || ch == EOF)) informal = false;
-        // dicard comment and informal unless it is a special token
-        if (comment || strchr(TEHSSL_SPECIAL_CHARS, ch) == NULL) goto NEXTCHAR;
+        if (ch == '\n' || ch == EOF) comment = false;
+        goto NEXTCHAR;
     }
     // spaces only matter in strings, but they delimit other things
     else if (!string && isspace(ch)) {
-        printf("space outside of string, i=%ld\n", i);
-        informal = false;
+        // printf("space outside of string, i=%ld\n", i);
         if (i == 0) goto NEXTCHAR;
         else return buffer;
     }
@@ -742,7 +737,7 @@ char* tehssl_next_token(FILE* file) {
     if (ch == '"') {
         string = !string;
         if (i > 0) {
-            printf("i>0, ");
+            // printf("i>0, ");
             if (string) ungetc(ch, file);
             return buffer;
         }
@@ -761,14 +756,8 @@ char* tehssl_next_token(FILE* file) {
         else ungetc(ch, file);
         return buffer;
     }
-    if (i == 0 && 'a' <= ch && ch <= 'z') {
-        // informal tokens start with lowercase letter
-        informal = true;
-        printf("informal=true, ");
-        goto NEXTCHAR;
-    }
     BUFPUT:
-    printf("->buf, ");
+    // printf("->buf, ");
     // allocate more memory as needed
     if (i >= buffersz) {
         buffersz += TEHSSL_CHUNK_SIZE;
@@ -777,7 +766,7 @@ char* tehssl_next_token(FILE* file) {
     buffer[i] = ch;
     i++;
     if (i == 2 && buffer[0] == '~' && ch == '~') {
-        printf("got ~~ for comment, ");
+        // printf("got ~~ for comment, ");
         // go into comment mode
         comment = true;
         // discard ~~
@@ -793,232 +782,11 @@ char* tehssl_next_token(FILE* file) {
 tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, tehssl_object_t scope, char stop) {
     if (stream == NULL) return OK;
     if (stream->type != STREAM) return tehssl_error(vm, "can't compile from a non-stream");
+    FILE* file = stream->file;
     tehssl_push(vm, &vm->gc_stack, stream);
-    char* buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
-    size_t buffersz = TEHSSL_CHUNK_SIZE;
-    char ch;
-    tehssl_object_t out_block = NULL;
-    tehssl_object_t out_block_tail = NULL;
-    tehssl_object_t current_line = NULL;
-    tehssl_object_t current_line_tail = NULL;
-    NEXTTOKEN:
-    bool done = false;
-    do {
-        ch = fgetc(stream->file);
-        if (ch == stop) {
-            #ifdef TEHSSL_DEBUG
-            printf("Hit end: %c\n", stop);
-            #endif
-            free(buffer);
-            tehssl_pop(&vm->gc_stack);
-            vm->return_value = out_block;
-            return OK;
-        }
-        if (ch == EOF) {
-            #ifdef TEHSSL_DEBUG
-            printf("Unexpected EOF\n");
-            #endif
-            free(buffer);
-            tehssl_pop(&vm->gc_stack);
-            return tehssl_error(vm, "unexpected EOF");
-        }
-    } while (isspace(ch));
-    // Get one token
-    tehssl_object_t item = NULL;
-    bool is_literal_symbol = false;
-    if (ch == '{') {
-        #ifdef TEHSSL_DEBUG
-        printf("{ ");
-        #endif
-        tehssl_object_t newscope = tehssl_alloc(vm, SCOPE);
-        newscope->parent = scope;
-        tehssl_result_t r = tehssl_compile_until(vm, stream, scope, '}');
-        TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
-        #ifdef TEHSSL_DEBUG
-        printf("}\n");
-        #endif
-        item = vm->return_value;
-    }
-    // Handle ; at end of line
-    else if (ch == ';') {
-        FINISHED:
-        #ifdef TEHSSL_DEBUG
-        printf("; ");
-        #endif
-        tehssl_object_t newln = tehssl_alloc(vm, BLOCK);
-        newln->code = current_line;
-        current_line = NULL;
-        current_line_tail = NULL;
-        if (out_block) {
-            out_block_tail->next = newln;
-            out_block_tail = newln;
-        }
-        else {
-            out_block = newln;
-            out_block_tail = newln;
-        }
-        if (done) {
-            vm->return_value = out_block;
-            tehssl_pop(&vm->gc_stack);
-            return OK;
-        }
-    }
-    // TODO:  [  and  (  syntactic sugar for List and Point
-    // Handle extraneous close braces
-    else if (ch == '}') {
-        #ifdef TEHSSL_DEBUG
-        printf("Unexpected }\n");
-        #endif
-        free(buffer);
-        tehssl_pop(&vm->gc_stack);
-        return tehssl_error(vm, "unexpected '}'");
-    }
-    else if (ch == ']') {
-        #ifdef TEHSSL_DEBUG
-        printf("Unexpected ]\n");
-        #endif
-        free(buffer);
-        tehssl_pop(&vm->gc_stack);
-        return tehssl_error(vm, "unexpected ']'");
-    }
-    else if (ch == ')') {
-        #ifdef TEHSSL_DEBUG
-        printf("Unexpected )\n");
-        #endif
-        free(buffer);
-        tehssl_pop(&vm->gc_stack);
-        return tehssl_error(vm, "unexpected ')'");
-    }
-    // Informal syntax: lowercase word
-    else if ('a' <= ch && ch <= 'z') {
-        #ifdef TEHSSL_DEBUG
-        printf("Informal word\n");
-        #endif
-        do {
-            ch = fgetc(stream->file);
-            #ifdef TEHSSL_DEBUG
-            printf("ichar: %c\n", ch);
-            #endif
-            if (ch == stop) {
-                #ifdef TEHSSL_DEBUG
-                printf("Hit end: %d\n", stop);
-                #endif
-                free(buffer);
-                vm->return_value = out_block;
-                tehssl_pop(&vm->gc_stack);
-                return OK;
-            }
-            if (ch == EOF) {
-                #ifdef TEHSSL_DEBUG
-                printf("Unexpected EOF\n");
-                #endif
-                free(buffer);
-                tehssl_pop(&vm->gc_stack);
-                return tehssl_error(vm, "unexpected EOF");
-            }
-        } while (isalpha(ch));
-        goto NEXTTOKEN;
-    }
-    // Symbol and normal word
-    else {
-        size_t i = 0;
-        size_t tildes = 0;
-        if (ch == '\\') is_literal_symbol = true;
-        else {
-            i = 1;
-            buffer[0] = ch;
-        }
-        if (ch == '~') tildes++;
-        // fill buffer, expand as needed
-        while (true) {
-            if (i == buffersz) {
-                buffersz += TEHSSL_CHUNK_SIZE;
-                buffer = (char*)realloc(buffer, buffersz);
-            }
-            ch = fgetc(stream->file);
-            if (ch == '~') tildes++;
-            if (tildes == 2) {
-                // Lop comment until end of line
-                do {
-                    ch = fgetc(stream->file);
-                    if (ch == EOF) {
-                        #ifdef TEHSSL_DEBUG
-                        printf("Hit eof\n");
-                        #endif
-                        done = true;
-                        goto BUFFERFULL;
-                    }
-                    if (ch == EOF) {
-                        #ifdef TEHSSL_DEBUG
-                        printf("Unexpected EOF\n");
-                        #endif
-                        free(buffer);
-                        tehssl_pop(&vm->gc_stack);
-                        return tehssl_error(vm, "unexpected EOF");
-                    }
-                } while (strchr("\r\n", ch) == NULL);
-                free(buffer);
-                buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
-                goto NEXTTOKEN;
-            }
-            if (ch == stop) {
-                #ifdef TEHSSL_DEBUG
-                printf("Hit end: %c\n", stop);
-                #endif
-                done = true;
-                goto BUFFERFULL;
-            }
-            if (ch == EOF) {
-                #ifdef TEHSSL_DEBUG
-                printf("Unexpected EOF\n");
-                #endif
-                free(buffer);
-                tehssl_pop(&vm->gc_stack);
-                return tehssl_error(vm, "unexpected EOF");
-            }
-            if (isspace(ch)) {
-                buffer[i] = 0;
-                break;
-            }
-            buffer[i] = ch;
-            i++;
-        }
-    }
-    BUFFERFULL:
-    // Try number
-    double n;
-    int good = sscanf(buffer, "%lg", &n);
-    if (good == 1) {
-        #ifdef TEHSSL_DEBUG
-        printf("Number: %lg\n", n);
-        #endif
-        item = tehssl_alloc(vm, NUMBER);
-        item->number = n;
-    }
-    // It's a symbol
-    else {
-        #ifdef TEHSSL_DEBUG
-        printf("Got symbol: %s\n", buffer);
-        #endif
-        if (is_literal_symbol) item = tehssl_make_symbol(vm, (const char*)buffer, SYMBOL_LITERAL);
-        else item = tehssl_make_symbol(vm, (const char*)buffer, SYMBOL_WORD);
-    }
-    buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
-    tehssl_object_t newb = tehssl_alloc(vm, LINE);
-    newb->item = item;
-    if (current_line) {
-        current_line_tail->next = newb;
-        current_line_tail = newb;
-    }
-    else {
-        current_line = newb;
-        current_line_tail = newb;
-    }
-    if (done) {
-        free(buffer);
-        goto FINISHED;
-    }
-    else goto NEXTTOKEN;
+    DONE:
+    tehssl_pop(&vm->gc_stack);
+    return OK;
 }
 
 tehssl_result_t tehssl_run_string(tehssl_vm_t vm, const char* string) {
@@ -1106,11 +874,11 @@ int main() {
             free(token);
             break;
         }
-        printf("\n\ntoken-> %s\n\n", token);
+        printf("\n%s", token);
+        if (token[0] == '"') putchar('"');
         free(token);
     }
     fclose(s);
-    free(s);
 
     // test 3
     printf("\n\n-----test 3: parser----\n\n");
