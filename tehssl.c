@@ -804,7 +804,7 @@ tehssl_result_t tehssl_run_string(tehssl_vm_t vm, const char* string) {
     debug_print_type(rv->type);
     putchar('\n');
     #endif
-    return tehssl_eval(vm, rv);
+    return OK;// tehssl_eval(vm, rv);
 }
 
 
