@@ -579,48 +579,48 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 
 
 // Evaluator
-tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
-    // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
-    tehssl_push(vm, &vm->gc_stack, NULL);
-    while (line != NULL) {
-        tehssl_object_t item = line->value;
-        if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
-            #ifdef TEHSSL_DEBUG
-            printf("Preprocess -> Got a literal: ");
-            debug_print_type(item->type);
-            putchar('\n');
-            #endif
-            tehssl_push(vm, &vm->gc_stack->value, item, LINE);
-            line = line->next;
-            continue;
-        }
-        tehssl_object_t macro = tehssl_lookup(scope, item->name, LOOKUP_MACRO);
-        if (macro == NULL) {
-            #ifdef TEHSSL_DEBUG
-            printf("Preprocess -> Not macro: %s\n", item->name);
-            #endif
-            tehssl_push(vm, &vm->gc_stack->value, item, LINE);
-            line = line->next;
-            continue;
-        }
-        if (macro->type == UFUNCTION) {
-            // not implemented
-            tehssl_pop(&vm->gc_stack);
-            return tehssl_error(vm, "todo: user-defined macros");
-        } else if (macro->type == CFUNCTION) {
-            tehssl_push(vm, &vm->stack, line);
-            macro->c_function(vm, scope);
-            line = tehssl_pop(&vm->stack);
-            tehssl_push(vm, &vm->gc_stack->value, line->value, LINE);
-            line = line->next;
-        } else {
-            // something's wrong
-            return tehssl_error(vm, "defined non-function as a macro");
-        }
-    }
-    vm->return_value = tehssl_pop(&vm->gc_stack);
-    return OK;
-}
+// tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
+//     // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
+//     tehssl_push(vm, &vm->gc_stack, NULL);
+//     while (line != NULL) {
+//         tehssl_object_t item = line->value;
+//         if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
+//             #ifdef TEHSSL_DEBUG
+//             printf("Preprocess -> Got a literal: ");
+//             debug_print_type(item->type);
+//             putchar('\n');
+//             #endif
+//             tehssl_push(vm, &vm->gc_stack->value, item, LINE);
+//             line = line->next;
+//             continue;
+//         }
+//         tehssl_object_t macro = tehssl_lookup(scope, item->name, LOOKUP_MACRO);
+//         if (macro == NULL) {
+//             #ifdef TEHSSL_DEBUG
+//             printf("Preprocess -> Not macro: %s\n", item->name);
+//             #endif
+//             tehssl_push(vm, &vm->gc_stack->value, item, LINE);
+//             line = line->next;
+//             continue;
+//         }
+//         if (macro->type == UFUNCTION) {
+//             // not implemented
+//             tehssl_pop(&vm->gc_stack);
+//             return tehssl_error(vm, "todo: user-defined macros");
+//         } else if (macro->type == CFUNCTION) {
+//             tehssl_push(vm, &vm->stack, line);
+//             macro->c_function(vm, scope);
+//             line = tehssl_pop(&vm->stack);
+//             tehssl_push(vm, &vm->gc_stack->value, line->value, LINE);
+//             line = line->next;
+//         } else {
+//             // something's wrong
+//             return tehssl_error(vm, "defined non-function as a macro");
+//         }
+//     }
+//     vm->return_value = tehssl_pop(&vm->gc_stack);
+//     return OK;
+// }
 
 // void tehssl_fix_line_links(tehssl_object_t line_head) {
 //     // Assuming the ->next fields are all correct, and it is a LINE
@@ -635,79 +635,79 @@ tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, te
 #define yield()
 #endif
 
-tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
-    EVAL:
-    yield();
-    tehssl_push(vm, &vm->gc_stack, block);
-    if (tehssl_is_literal(block)) {
-        #ifdef TEHSSL_DEBUG
-        printf("Got a literal: ");
-        debug_print_type(block->type);
-        putchar('\n');
-        #endif
-        tehssl_push(vm, &vm->stack, block);
-        block = NULL;
-    }
-    if (block == NULL) {
-        #ifdef TEHSSL_DEBUG
-        printf("Block is null, returning\n");
-        #endif
-        tehssl_pop(&vm->gc_stack);
-        return OK;
-    }
-    tehssl_object_t scope = block->scope;
-    tehssl_result_t r = tehssl_macro_preprocess(vm, block->code, scope);
-    TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
-    tehssl_object_t ll = vm->return_value;
-    // tehssl_fix_line_links(ll);
-    while (ll != NULL) {
-        // eval the line
-        tehssl_object_t item = ll->value;
-        if (tehssl_is_literal(item)) {
-            tehssl_push(vm, &vm->stack, item);
-        } else {
-            if (item->type == SYMBOL) { // literals will have been caught by tehssl_is_literal()
-                tehssl_object_t var = tehssl_lookup(scope, item->name, LOOKUP_VARIABLE);
-                if (var != NULL) {
-                    #ifdef TEHSSL_DEBUG
-                    printf("Variable: %s\n", item->name);
-                    #endif
-                    tehssl_push(vm, &vm->stack, var->value);
-                } else {
-                    tehssl_object_t fun = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
-                    if (fun != NULL) {
-                        #ifdef TEHSSL_DEBUG
-                        printf("Nested function: %s\n", item->name);
-                        #endif
-                        if (fun->type == CFUNCTION) {
-                            r = fun->c_function(vm, scope);
-                        } else {
-                            // reader handles scope links on lambda blocks
-                            r = tehssl_eval(vm, fun->block);
-                        }
-                    } else {
-                        #ifdef TEHSSL_DEBUG
-                        printf("Undefined word: %s\n", item->name);
-                        #endif
-                        return tehssl_error(vm, "undefined word", item->name);
-                    }
-                }
-            } else {
-                #ifdef TEHSSL_DEBUG
-                printf("Invalid eval: ");
-                debug_print_type(block->type);
-                putchar('\n');
-                #endif
-                return tehssl_error(vm, "not valid here");
-            }
-        }
-        ll = ll->next;
-        TEHSSL_POP_AND_RETURN_ON_ERROR(vm->result_code, vm->gc_stack);
-        TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
-    }
-    block = block->next;
-    goto EVAL;
-}
+// tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
+//     EVAL:
+//     yield();
+//     tehssl_push(vm, &vm->gc_stack, block);
+//     if (tehssl_is_literal(block)) {
+//         #ifdef TEHSSL_DEBUG
+//         printf("Got a literal: ");
+//         debug_print_type(block->type);
+//         putchar('\n');
+//         #endif
+//         tehssl_push(vm, &vm->stack, block);
+//         block = NULL;
+//     }
+//     if (block == NULL) {
+//         #ifdef TEHSSL_DEBUG
+//         printf("Block is null, returning\n");
+//         #endif
+//         tehssl_pop(&vm->gc_stack);
+//         return OK;
+//     }
+//     tehssl_object_t scope = block->scope;
+//     tehssl_result_t r = tehssl_macro_preprocess(vm, block->code, scope);
+//     TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
+//     tehssl_object_t ll = vm->return_value;
+//     // tehssl_fix_line_links(ll);
+//     while (ll != NULL) {
+//         // eval the line
+//         tehssl_object_t item = ll->value;
+//         if (tehssl_is_literal(item)) {
+//             tehssl_push(vm, &vm->stack, item);
+//         } else {
+//             if (item->type == SYMBOL) { // literals will have been caught by tehssl_is_literal()
+//                 tehssl_object_t var = tehssl_lookup(scope, item->name, LOOKUP_VARIABLE);
+//                 if (var != NULL) {
+//                     #ifdef TEHSSL_DEBUG
+//                     printf("Variable: %s\n", item->name);
+//                     #endif
+//                     tehssl_push(vm, &vm->stack, var->value);
+//                 } else {
+//                     tehssl_object_t fun = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
+//                     if (fun != NULL) {
+//                         #ifdef TEHSSL_DEBUG
+//                         printf("Nested function: %s\n", item->name);
+//                         #endif
+//                         if (fun->type == CFUNCTION) {
+//                             r = fun->c_function(vm, scope);
+//                         } else {
+//                             // reader handles scope links on lambda blocks
+//                             r = tehssl_eval(vm, fun->block);
+//                         }
+//                     } else {
+//                         #ifdef TEHSSL_DEBUG
+//                         printf("Undefined word: %s\n", item->name);
+//                         #endif
+//                         return tehssl_error(vm, "undefined word", item->name);
+//                     }
+//                 }
+//             } else {
+//                 #ifdef TEHSSL_DEBUG
+//                 printf("Invalid eval: ");
+//                 debug_print_type(block->type);
+//                 putchar('\n');
+//                 #endif
+//                 return tehssl_error(vm, "not valid here");
+//             }
+//         }
+//         ll = ll->next;
+//         TEHSSL_POP_AND_RETURN_ON_ERROR(vm->result_code, vm->gc_stack);
+//         TEHSSL_POP_AND_RETURN_ON_ERROR(r, vm->gc_stack);
+//     }
+//     block = block->next;
+//     goto EVAL;
+// }
 
 // Tokenizer
 #define TEHSSL_SPECIAL_CHARS "{}[]();"
@@ -842,9 +842,10 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
 tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); return OK; }
 int main() {
     const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A step: 3 do { take the Square; Print the Fibbonaci of said square; }; Print \"DONE!!\" 123";
+    tehssl_vm_t vm = tehssl_new_vm();
+
     // test 1
     printf("\n\n-----test 1: garbage collector----\n\n");
-    tehssl_vm_t vm = tehssl_new_vm();
     // Make some garbage
     for (int i = 0; i < 5; i++) {
         tehssl_make_number(vm, 123);
@@ -882,11 +883,13 @@ int main() {
     fclose(s);
 
     // test 3
-    printf("\n\n-----test 3: parser----\n\n");
-    tehssl_result_t r = tehssl_run_string(vm, str);
-    printf("Returned %d: ", r);
-    debug_print_type(vm->return_value->type);
-    putchar('\n');
+    // printf("\n\n-----test 3: parser----\n\n");
+    // tehssl_result_t r = tehssl_run_string(vm, str);
+    // printf("Returned %d: ", r);
+    // debug_print_type(vm->return_value->type);
+    // putchar('\n');
+
+
     tehssl_destroy(vm);
 }
 #endif
