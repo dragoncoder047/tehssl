@@ -1,9 +1,11 @@
 #ifdef __cplusplus
 #include <cstring>
+#include <cstdio>
 #include <iostream>
 #define TEHSSL_DEBUG
 #else
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #undef TEHSSL_DEBUG
 #endif
@@ -51,11 +53,11 @@ enum tehssl_typeid {
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
     LINE,        //                (item)       (next)
-    BLOCK,       //   (scope)      (code)       (next)
+    BLOCK,       //   (parent)     (code)       (next)
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
-    STREAM,      //   char*        streamfun_t  (state)              char* is name
+    STREAM,      //   char*        FILE*                     char* is name
     USERTYPE,    //   char*        (ptr1)       (ptr2)
     // Special internal types
     SCOPE,       //   (functions)  (variables)  (parent)
@@ -66,14 +68,11 @@ enum tehssl_typeid {
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
-enum tehssl_stream_action {
-    STREAM_READ,
-    STREAM_WRITE
-};
-
 enum tehssl_type_action {
     CTYPE_INIT,
     CTYPE_PRINT,
+    CTYPE_MARK,
+    CTYPE_COMPARE,
     CTYPE_DESTROY
 };
 
@@ -81,14 +80,11 @@ enum tehssl_type_action {
 typedef enum tehssl_typeid tehssl_typeid_t;
 typedef enum tehssl_flag tehssl_flag_t;
 typedef enum tehssl_result tehssl_result_t;
-typedef enum tehssl_stream_action tehssl_stream_action_t;
 typedef enum tehssl_type_action tehssl_type_action_t;
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
-typedef struct tehssl_stream_state *tehssl_stream_state_t;
-typedef char (*tehssl_streamfun_t)(char, tehssl_stream_action_t, tehssl_stream_state_t);
 typedef tehssl_result_t (*tehssl_cfun_t)(tehssl_vm_t, tehssl_object_t);
-typedef void (*tehssl_typefun_t)(tehssl_vm_t, tehssl_type_action_t, tehssl_object_t, void*);
+typedef int (*tehssl_typefun_t)(tehssl_vm_t, tehssl_type_action_t, tehssl_object_t, void*);
 typedef uint16_t tehssl_flags_t;
 
 // Main OBJECT type
@@ -112,7 +108,7 @@ struct tehssl_object {
                 tehssl_object_t variables;
                 tehssl_object_t block;
                 tehssl_object_t ptr1;
-                tehssl_streamfun_t stream_function;
+                FILE* file;
                 tehssl_cfun_t c_function;
                 tehssl_typefun_t type_function;
             };
@@ -120,15 +116,9 @@ struct tehssl_object {
                 tehssl_object_t next;
                 tehssl_object_t parent;
                 tehssl_object_t ptr2;
-                tehssl_stream_state_t state;
             };
         };
     };
-};
-
-struct tehssl_stream_state {
-    void* string_or_file;
-    size_t position;
 };
 
 // TEHSSL VM type
@@ -191,7 +181,6 @@ inline bool tehssl_is_literal(tehssl_object_t object) {
             return tehssl_test_flag(object, LITERAL_SYMBOL);
         case LIST:
         case DICT:
-        case BLOCK:
         case STRING:
         case STREAM:
         case NUMBER:
@@ -237,7 +226,16 @@ tehssl_object_t tehssl_alloc(tehssl_vm_t vm, tehssl_typeid_t type) {
 }
 
 // Garbage collection
-void tehssl_markobject(tehssl_object_t object) {
+tehssl_object_t tehssl_get_type_handle(tehssl_vm_t vm, char* type) {
+    tehssl_object_t type_handle = vm->type_functions;
+    while (type_handle != NULL) {
+        if (strcmp(type, type_handle->name) == 0) break;
+        type_handle = type_handle->next;
+    }
+    return type_handle;
+}
+
+void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
     MARK:
     // already marked? abort
     if (object == NULL) return;
@@ -248,12 +246,11 @@ void tehssl_markobject(tehssl_object_t object) {
         case SCOPE:
         // case LINE:
         case BLOCK:
-            tehssl_markobject(object->key);
+            tehssl_markobject(vm, object->key);
             // fallthrough
         case LIST:
         case LINE:
-        case USERTYPE:
-            tehssl_markobject(object->value);
+            tehssl_markobject(vm, object->value);
             object = object->next;
             goto MARK;
         case NUMBER:
@@ -263,21 +260,31 @@ void tehssl_markobject(tehssl_object_t object) {
             break; // noop
         case UFUNCTION:
         case VARIABLE:
-            tehssl_markobject(object->value);
+            tehssl_markobject(vm, object->value);
             // fallthrough
         case CFUNCTION:
         case TFUNCTION:
             object = object->next;
             goto MARK;
+        case USERTYPE:
+            // find type handle function
+            tehssl_object_t type_handle = tehssl_get_type_handle(vm, object->name);
+            if (type_handle == NULL) {
+                #ifdef TEHSSL_DEBUG
+                printf("\nWARNING: marking a custom type '%s' with no registered handler function... may cause dangling pointers\n", object->name);
+                #endif
+            } else {
+                type_handle->type_function(vm, CTYPE_MARK, object, NULL);
+            }
     }
 }
 
 void tehssl_markall(tehssl_vm_t vm) {
-    tehssl_markobject(vm->stack);
-    tehssl_markobject(vm->return_value);
-    tehssl_markobject(vm->global_scope);
-    tehssl_markobject(vm->gc_stack);
-    tehssl_markobject(vm->type_functions);
+    tehssl_markobject(vm, vm->stack);
+    tehssl_markobject(vm, vm->return_value);
+    tehssl_markobject(vm, vm->global_scope);
+    tehssl_markobject(vm, vm->gc_stack);
+    tehssl_markobject(vm, vm->type_functions);
 }
 
 void tehssl_sweep(tehssl_vm_t vm) {
@@ -291,19 +298,15 @@ void tehssl_sweep(tehssl_vm_t vm) {
             #endif
             if (unreached->type == STREAM) {
                 #ifdef TEHSSL_DEBUG
-                printf(" +streamstate");
+                printf(" +FILE");
                 #endif
-                if (unreached->state != NULL) free(unreached->state->string_or_file);
-                free(unreached->state);
-                unreached->state = NULL;
+                if (unreached->file != NULL) fclose(unreached->file);
+                free(unreached->file);
+                unreached->file = NULL;
             }
             else if (unreached->type == USERTYPE) {
                 // find type handle function
-                tehssl_object_t type_handle = vm->type_functions;
-                while (type_handle != NULL) {
-                    if (strcmp(unreached->name, type_handle->name) == 0) break;
-                    type_handle = type_handle->next;
-                }
+                tehssl_object_t type_handle = tehssl_get_type_handle(vm, unreached->name);
                 if (type_handle == NULL) {
                     #ifdef TEHSSL_DEBUG
                     printf("\nWARNING: freeing a custom type '%s' with no registered handler function... may cause memory leaks\n", unreached->name);
@@ -370,29 +373,6 @@ inline tehssl_object_t tehssl_pop(tehssl_object_t* stack) {
     return item;
 }
 
-// Stream read and write functions
-char tehssl_getchar(tehssl_vm_t vm, tehssl_object_t stream) {
-    if (vm->last_char) {
-        char ch = vm->last_char;
-        vm->last_char = 0;
-        return ch;
-    }
-    if (stream->type != STREAM) return -1;
-    return stream->stream_function(0, STREAM_READ, stream->state);
-}
-
-void tehssl_putchar(char ch, tehssl_object_t stream) {
-    if (stream->type != STREAM) return;
-    stream->stream_function(ch, STREAM_WRITE, stream->state);
-}
-
-char tehssl_peekchar(tehssl_vm_t vm, tehssl_object_t stream) {
-    if (vm->last_char) return vm->last_char;
-    if (stream->type != STREAM) return -1;
-    vm->last_char = stream->stream_function(0, STREAM_READ, stream->state);
-    return vm->last_char;
-}
-
 // Make objects
 tehssl_object_t tehssl_make_string(tehssl_vm_t vm, const char* string) {
     tehssl_object_t object = vm->first_object;
@@ -430,28 +410,22 @@ tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
     return sobj;
 }
 
-tehssl_object_t tehssl_make_stream(tehssl_vm_t vm, char* name, tehssl_streamfun_t streamfun, tehssl_stream_state_t state) {
+tehssl_object_t tehssl_make_stream(tehssl_vm_t vm, char* name, FILE* file) {
     tehssl_object_t sobj = tehssl_alloc(vm, STREAM);
     sobj->name = mystrdup(name);
-    sobj->stream_function = streamfun;
-    sobj->state = state;
+    sobj->file = file;
     return sobj;
 }
 
-tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, const char* type, void* data) {
+tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, char* type, void* data) {
     tehssl_object_t obj = tehssl_alloc(vm, USERTYPE);
-    tehssl_object_t typefun = vm->type_functions;
-    while (typefun != NULL) {
-        if (strcmp(type, typefun->name) == 0) break;
-        typefun = typefun->next;
-    }
-    if (typefun == NULL) {
+    tehssl_object_t type_handle = tehssl_get_type_handle(vm, type);
+    if (type_handle == NULL) {
         #ifdef TEHSSL_DEBUG
         printf("\nWARNING: allocating a custom type '%s' with no registered type function\n", type);
         #endif
-        return obj;
     }
-    typefun->type_function(vm, CTYPE_INIT, obj, data);
+    else type_handle->type_function(vm, CTYPE_INIT, obj, data);
     return obj;
 }
 
@@ -502,7 +476,7 @@ bool tehssl_compare_strings(char* a, char* b, bool lt, bool eq, bool gt) {
     return false; // unreachable, just to satisfy compiler
 }
 
-bool tehssl_equal(tehssl_object_t a, tehssl_object_t b) {
+bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
     CMP:
     if (a == b) return true; // Same object
     if (a == NULL || b == NULL) return false; // Null
@@ -514,14 +488,13 @@ bool tehssl_equal(tehssl_object_t a, tehssl_object_t b) {
         case VARIABLE:
         // case LINE:
         case BLOCK:
-            if (!tehssl_equal(a->key, b->key)) return false;
+            if (!tehssl_equal(vm, a->key, b->key)) return false;
             // fallthrough
         case LIST:
         case LINE:
-        case USERTYPE:
         case CFUNCTION:
         case TFUNCTION:
-            if (!tehssl_equal(a->value, b->value)) return false;
+            if (!tehssl_equal(vm, a->value, b->value)) return false;
             a = a->next;
             b = b->next;
             goto CMP;
@@ -531,6 +504,16 @@ bool tehssl_equal(tehssl_object_t a, tehssl_object_t b) {
         case STRING:
         case STREAM:
             return tehssl_compare_strings(a->name, b->name, false, true, false);
+        case USERTYPE:
+            if (strcmp(a->name, b->name) != 0) return false;
+            tehssl_object_t type_handle = tehssl_get_type_handle(vm, a->name);
+            if (type_handle == NULL) {
+                #ifdef TEHSSL_DEBUG
+                printf("\nWARNING: comparing a custom type '%s' with no registered type function\n", a->name);
+                #endif
+                return true;
+            }
+            return type_handle->type_function(vm, CTYPE_COMPARE, a, (void*)b) == 0;
     }
 }
 
@@ -565,9 +548,9 @@ void tehssl_list_set(tehssl_object_t list, int i, tehssl_object_t new_value) {
     if (list != NULL) list->value = new_value;
 }
 
-tehssl_object_t tehssl_dict_get(tehssl_object_t dict, tehssl_object_t key) {
+tehssl_object_t tehssl_dict_get(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key) {
     while (dict != NULL) {
-        if (tehssl_equal(dict->key, key)) break;
+        if (tehssl_equal(vm, dict->key, key)) break;
         dict = dict->next;
     }
     if (dict == NULL) return NULL;
@@ -576,7 +559,7 @@ tehssl_object_t tehssl_dict_get(tehssl_object_t dict, tehssl_object_t key) {
 
 void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, tehssl_object_t new_value) {
     while (true) {
-        if (tehssl_equal(dict->key, key)) break;
+        if (tehssl_equal(vm, dict->key, key)) break;
         if (dict->next == NULL) { // Exhausted all entries
             tehssl_object_t newentry = tehssl_alloc(vm, DICT);
             newentry->key = key;
@@ -590,32 +573,6 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 // C functions
 
 
-char tehssl_stringstream_fun(char print, tehssl_stream_action_t action, tehssl_stream_state_t state) {
-    if (action == STREAM_READ) {
-        size_t len = strlen((char*)state->string_or_file);
-        if (state->position >= len) {
-            return -1;
-        } else {
-            char c = ((char*)state->string_or_file)[state->position];
-            state->position++;
-            return c;
-        }
-    }
-    return 0;
-}
-
-tehssl_object_t tehssl_make_stringstream(tehssl_vm_t vm, char* string) {
-    tehssl_stream_state_t ss = (tehssl_stream_state_t)malloc(sizeof(struct tehssl_stream_state));
-    ss->string_or_file = (void*)string;
-    ss->position = 0;
-    tehssl_object_t s = tehssl_alloc(vm, STREAM);
-    s->name = mystrdup("stringstream");
-    s->stream_function = tehssl_stringstream_fun;
-    s->state = ss;
-    return s;
-}
-
-
 // Evaluator
 tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
     // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
@@ -623,12 +580,20 @@ tehssl_result_t tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, te
     while (line != NULL) {
         tehssl_object_t item = line->value;
         if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
+            #ifdef TEHSSL_DEBUG
+            printf("Preprocess -> Got a literal: ");
+            debug_print_type(item->type);
+            putchar('\n');
+            #endif
             tehssl_push(vm, &vm->gc_stack->value, item, LINE);
             line = line->next;
             continue;
         }
         tehssl_object_t macro = tehssl_lookup(scope, item->name, LOOKUP_MACRO);
         if (macro == NULL) {
+            #ifdef TEHSSL_DEBUG
+            printf("Preprocess -> Not macro: %s\n", item->name);
+            #endif
             tehssl_push(vm, &vm->gc_stack->value, item, LINE);
             line = line->next;
             continue;
@@ -670,10 +635,18 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
     yield();
     tehssl_push(vm, &vm->gc_stack, block);
     if (tehssl_is_literal(block)) {
+        #ifdef TEHSSL_DEBUG
+        printf("Got a literal: ");
+        debug_print_type(block->type);
+        putchar('\n');
+        #endif
         tehssl_push(vm, &vm->stack, block);
         block = NULL;
     }
     if (block == NULL) {
+        #ifdef TEHSSL_DEBUG
+        printf("Block is null, returning\n");
+        #endif
         tehssl_pop(&vm->gc_stack);
         return OK;
     }
@@ -691,10 +664,16 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
             if (item->type == SYMBOL) { // literals will have been caught by tehssl_is_literal()
                 tehssl_object_t var = tehssl_lookup(scope, item->name, LOOKUP_VARIABLE);
                 if (var != NULL) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("Variable: %s\n", item->name);
+                    #endif
                     tehssl_push(vm, &vm->stack, var->value);
                 } else {
                     tehssl_object_t fun = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
                     if (fun != NULL) {
+                        #ifdef TEHSSL_DEBUG
+                        printf("Nested function: %s\n", item->name);
+                        #endif
                         if (fun->type == CFUNCTION) {
                             r = fun->c_function(vm, scope);
                         } else {
@@ -702,10 +681,18 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
                             r = tehssl_eval(vm, fun->block);
                         }
                     } else {
+                        #ifdef TEHSSL_DEBUG
+                        printf("Undefined word: %s\n", item->name);
+                        #endif
                         return tehssl_error(vm, "undefined word", item->name);
                     }
                 }
             } else {
+                #ifdef TEHSSL_DEBUG
+                printf("Invalid eval: ");
+                debug_print_type(block->type);
+                putchar('\n');
+                #endif
                 return tehssl_error(vm, "not valid here");
             }
         }
@@ -724,58 +711,118 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
     char* buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
     size_t buffersz = TEHSSL_CHUNK_SIZE;
     char ch;
-    tehssl_object_t out_block;
-    tehssl_object_t out_block_tail;
-    tehssl_object_t current_line;
-    tehssl_object_t current_line_tail;
+    tehssl_object_t out_block = NULL;
+    tehssl_object_t out_block_tail = NULL;
+    tehssl_object_t current_line = NULL;
+    tehssl_object_t current_line_tail = NULL;
     NEXTTOKEN:
+    bool done = false;
     do {
-        ch = tehssl_getchar(vm, stream);
+        ch = fgetc(stream->file);
         if (ch == stop) {
+            #ifdef TEHSSL_DEBUG
+            printf("Hit end: %c\n", stop);
+            #endif
             free(buffer);
             vm->return_value = out_block;
             return OK;
+        }
+        if (ch == EOF) {
+            #ifdef TEHSSL_DEBUG
+            printf("Unexpected EOF\n");
+            #endif
+            free(buffer);
+            return tehssl_error(vm, "unexpected EOF");
         }
     } while (isspace(ch));
     // Get one token
     tehssl_object_t item = NULL;
     bool is_literal_symbol = false;
     if (ch == '{') {
+        #ifdef TEHSSL_DEBUG
+        printf("{");
+        #endif
         tehssl_object_t newscope = tehssl_alloc(vm, SCOPE);
         newscope->parent = scope;
         tehssl_result_t r = tehssl_compile_until(vm, stream, scope, '}');
         TEHSSL_RETURN_ON_ERROR(r);
+        #ifdef TEHSSL_DEBUG
+        printf("}\n");
+        #endif
         item = vm->return_value;
     }
     // Handle ; at end of line
     else if (ch == ';') {
+        FINISHED:
+        #ifdef TEHSSL_DEBUG
+        printf("; ");
+        #endif
         tehssl_object_t newln = tehssl_alloc(vm, BLOCK);
-        // TODO: finish nexting block
+        newln->code = current_line;
+        current_line = NULL;
+        current_line_tail = NULL;
+        if (out_block) {
+            out_block_tail->next = newln;
+            out_block_tail = newln;
+        }
+        else {
+            out_block = newln;
+            out_block_tail = newln;
+        }
+        if (done) {
+            vm->return_value = out_block;
+            return OK;
+        }
     }
     // TODO:  [  and  (  syntactic sugar for List and Point
     // Handle extraneous close braces
     else if (ch == '}') {
+        #ifdef TEHSSL_DEBUG
+        printf("Unexpected }\n");
+        #endif
         free(buffer);
         return tehssl_error(vm, "unexpected '}'");
     }
     else if (ch == ']') {
+        #ifdef TEHSSL_DEBUG
+        printf("Unexpected ]\n");
+        #endif
         free(buffer);
         return tehssl_error(vm, "unexpected ']'");
     }
     else if (ch == ')') {
+        #ifdef TEHSSL_DEBUG
+        printf("Unexpected )\n");
+        #endif
         free(buffer);
         return tehssl_error(vm, "unexpected ')'");
     }
     // Informal syntax: lowercase word
     else if ('a' <= ch && ch <= 'z') {
+        #ifdef TEHSSL_DEBUG
+        printf("Informal word\n");
+        #endif
         do {
-            ch = tehssl_getchar(vm, stream);
+            ch = fgetc(stream->file);
+            #ifdef TEHSSL_DEBUG
+            printf("ichar: %c\n", ch);
+            #endif
             if (ch == stop) {
+                #ifdef TEHSSL_DEBUG
+                printf("Hit end: %d\n", stop);
+                #endif
                 free(buffer);
                 vm->return_value = out_block;
                 return OK;
             }
-        } while (!isspace(ch));
+            if (ch == EOF) {
+                #ifdef TEHSSL_DEBUG
+                printf("Unexpected EOF\n");
+                #endif
+                free(buffer);
+                return tehssl_error(vm, "unexpected EOF");
+            }
+        } while (isalpha(ch));
         goto NEXTTOKEN;
     }
     // Symbol and normal word
@@ -794,16 +841,25 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
                 buffersz += TEHSSL_CHUNK_SIZE;
                 buffer = (char*)realloc(buffer, buffersz);
             }
-            ch = tehssl_getchar(vm, stream);
+            ch = fgetc(stream->file);
             if (ch == '~') tildes++;
             if (tildes == 2) {
                 // Lop comment until end of line
                 do {
-                    ch = tehssl_getchar(vm, stream);
-                    if (ch == -1) {
+                    ch = fgetc(stream->file);
+                    if (ch == EOF) {
+                        #ifdef TEHSSL_DEBUG
+                        printf("Hit eof\n");
+                        #endif
+                        done = true;
+                        goto BUFFERFULL;
+                    }
+                    if (ch == EOF) {
+                        #ifdef TEHSSL_DEBUG
+                        printf("Unexpected EOF\n");
+                        #endif
                         free(buffer);
-                        vm->return_value = out_block;
-                        return OK;
+                        return tehssl_error(vm, "unexpected EOF");
                     }
                 } while (strchr("\r\n", ch) == NULL);
                 free(buffer);
@@ -811,11 +867,20 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
                 goto NEXTTOKEN;
             }
             if (ch == stop) {
-                free(buffer);
-                vm->return_value = out_block;
-                return OK;
+                #ifdef TEHSSL_DEBUG
+                printf("Hit end: %c\n", stop);
+                #endif
+                done = true;
+                goto BUFFERFULL;
             }
-            if (strchr(" \t\n\r\v", ch) != NULL) {
+            if (ch == EOF) {
+                #ifdef TEHSSL_DEBUG
+                printf("Unexpected EOF\n");
+                #endif
+                free(buffer);
+                return tehssl_error(vm, "unexpected EOF");
+            }
+            if (isspace(ch)) {
                 buffer[i] = 0;
                 break;
             }
@@ -823,33 +888,58 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
             i++;
         }
     }
+    BUFFERFULL:
     // Try number
     double n;
     int good = sscanf(buffer, "%lg", &n);
     if (good == 1) {
+        #ifdef TEHSSL_DEBUG
+        printf("Number: %lg\n", n);
+        #endif
         item = tehssl_alloc(vm, NUMBER);
         item->number = n;
     }
     // It's a symbol
     else {
-        item = tehssl_alloc(vm, SYMBOL);
-        item->name = buffer;
-        if (is_literal_symbol) tehssl_set_flag(item, LITERAL_SYMBOL);
+        #ifdef TEHSSL_DEBUG
+        printf("Got symbol: %s\n", buffer);
+        #endif
+        if (is_literal_symbol) item = tehssl_make_symbol(vm, (const char*)buffer, SYMBOL_LITERAL);
+        else item = tehssl_make_symbol(vm, (const char*)buffer, SYMBOL_WORD);
     }
     buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
     tehssl_object_t newb = tehssl_alloc(vm, LINE);
     newb->item = item;
-    current_line_tail->next = newb;
-    current_line_tail = newb;
-    // TODO: finish nexting line
-    goto NEXTTOKEN;
+    if (current_line) {
+        current_line_tail->next = newb;
+        current_line_tail = newb;
+    }
+    else {
+        current_line = newb;
+        current_line_tail = newb;
+    }
+    if (done) {
+        free(buffer);
+        goto FINISHED;
+    }
+    else goto NEXTTOKEN;
 }
 
 tehssl_result_t tehssl_run_string(tehssl_vm_t vm, const char* string) {
-    tehssl_object_t ss = tehssl_make_stringstream(vm, mystrdup(string));
-    tehssl_result_t r = tehssl_compile_until(vm, ss, vm->global_scope, 0);
+    tehssl_object_t ss = tehssl_make_stream(vm, "stringstream", fmemopen((void*)string, strlen(string), "r"));
+    tehssl_result_t r = tehssl_compile_until(vm, ss, vm->global_scope, EOF);
     TEHSSL_RETURN_ON_ERROR(r);
-    return tehssl_eval(vm, vm->return_value);
+    tehssl_object_t rv = vm->return_value;
+    #ifdef TEHSSL_DEBUG
+    if (rv == NULL) {
+        printf("compile returned NULL!!\n");
+        return ERROR;
+    }
+    printf("Finished compile, running a ");
+    debug_print_type(rv->type);
+    putchar('\n');
+    #endif
+    return tehssl_eval(vm, rv);
 }
 
 
@@ -884,11 +974,13 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
 #ifdef TEHSSL_DEBUG
 // Test code
 // for pasting into https://cpp.sh/
-tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { return OK; }
+tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); return OK; }
 int main() {
+    // test 1
+    printf("\n\n-----test 1----\n");
     tehssl_vm_t vm = tehssl_new_vm();
     // Make some garbage
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 5; i++) {
         tehssl_make_number(vm, 123);
         tehssl_make_number(vm, 456.789123);
         tehssl_make_string(vm, "i am cow hear me moo");
@@ -901,6 +993,13 @@ int main() {
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);
+
+    // test 2
+    printf("\n\n-----test 2----\n");
+    tehssl_result_t r = tehssl_run_string(vm, "Hello world; 123; 456; { { { { MyFunction i am a cow hear me moo Yikes Yikes Yikes 0x667 }}}}");
+    printf("Returned %d: ", r);
+    debug_print_type(vm->return_value->type);
+    putchar('\n');
     tehssl_destroy(vm);
 }
 #endif
