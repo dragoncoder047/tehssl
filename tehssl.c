@@ -745,8 +745,8 @@ char* tehssl_next_token(FILE* file) {
         if (!string) return buffer;
         else return NULL;
     }
-    // Parens are their own token
-    if (strchr("{}[]()", ch) != NULL) {
+    // Parens and ; are their own token
+    if (strchr("{}[]();", ch) != NULL) {
         // no other char -> return paren as token
         if (i == 0) buffer[0] = ch;
         // other chars -> back up, stop, return that
@@ -1055,7 +1055,7 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
 tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); return OK; }
 int main() {
     // test 1
-    printf("\n\n-----test 1----\n");
+    printf("\n\n-----test 1: garbage collector----\n\n");
     tehssl_vm_t vm = tehssl_new_vm();
     // Make some garbage
     for (int i = 0; i < 5; i++) {
@@ -1073,7 +1073,17 @@ int main() {
     printf("%lu objects after gc\n", vm->num_objects);
 
     // test 2
-    printf("\n\n-----test 2----\n");
+    printf("\n\n-----test 2: tokenizer----\n\n");
+    const char* str = "Hello world! {}(){}()}{)}aa}Hell\"O;Hell O\"!;";
+    FILE* s = fmemopen((void*)str, strlen(str), "r");
+    char* token = NULL;
+    do {
+        token = tehssl_next_token(s);
+        printf("token-> %s\n", token);
+    } while (token != NULL);
+
+    // test 3
+    printf("\n\n-----test 3: parser----\n\n");
     tehssl_result_t r = tehssl_run_string(vm, "Hello world; 123; 456; { { { {MyFunction} i am a cow hear me moo Yikes Yikes Yikes 0x667 }}}");
     printf("Returned %d: ", r);
     debug_print_type(vm->return_value->type);
