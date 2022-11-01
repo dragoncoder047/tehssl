@@ -480,8 +480,8 @@ tehssl_result_t tehssl_error(tehssl_vm_t vm, const char* message) {
 }
 
 tehssl_result_t tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
-    char* buf = (char*)malloc(strlen(detail) + strlen(message) + 3);
-    sprintf(buf, "%s: %s", message, detail);
+    char* buf;
+    asprintf(&buf, "%s: %s", message, detail);
     vm->return_value = tehssl_alloc(vm, STRING);
     vm->return_value->name = buf;
     return ERROR;
@@ -733,16 +733,19 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
         ch = tehssl_getchar(vm, stream);
         if (ch == stop) {
             free(buffer);
-            return out_block;
+            vm->return_value = out_block;
+            return OK;
         }
-    } while (strchr(" \t\n\r\v", ch) != NULL);
+    } while (isspace(ch));
     // Get one token
     tehssl_object_t item = NULL;
     bool is_literal_symbol = false;
     if (ch == '{') {
         tehssl_object_t newscope = tehssl_alloc(vm, SCOPE);
         newscope->parent = scope;
-        item = tehssl_compile_until(vm, stream, scope, '}');
+        tehssl_result_t r = tehssl_compile_until(vm, stream, scope, '}');
+        TEHSSL_RETURN_ON_ERROR(r);
+        item = vm->return_value;
     }
     // Handle ; at end of line
     else if (ch == ';') {
@@ -769,9 +772,10 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
             ch = tehssl_getchar(vm, stream);
             if (ch == stop) {
                 free(buffer);
-                return out_block;
+                vm->return_value = out_block;
+                return OK;
             }
-        } while (strchr(" \t\n\r\v", ch) == NULL);
+        } while (!isspace(ch));
         goto NEXTTOKEN;
     }
     // Symbol and normal word
@@ -788,7 +792,7 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
         while (true) {
             if (i == buffersz) {
                 buffersz += TEHSSL_CHUNK_SIZE;
-                buffer = realloc(buffer, buffersz);
+                buffer = (char*)realloc(buffer, buffersz);
             }
             ch = tehssl_getchar(vm, stream);
             if (ch == '~') tildes++;
@@ -796,16 +800,20 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
                 // Lop comment until end of line
                 do {
                     ch = tehssl_getchar(vm, stream);
-                    if (ch == stop) {
+                    if (ch == -1) {
                         free(buffer);
-                        return out_block;
+                        vm->return_value = out_block;
+                        return OK;
                     }
                 } while (strchr("\r\n", ch) == NULL);
+                free(buffer);
+                buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
                 goto NEXTTOKEN;
             }
             if (ch == stop) {
                 free(buffer);
-                return out_block;
+                vm->return_value = out_block;
+                return OK;
             }
             if (strchr(" \t\n\r\v", ch) != NULL) {
                 buffer[i] = 0;
@@ -817,7 +825,7 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
     }
     // Try number
     double n;
-    int good = sscanf(buffer, "%g", &n);
+    int good = sscanf(buffer, "%lg", &n);
     if (good == 1) {
         item = tehssl_alloc(vm, NUMBER);
         item->number = n;
@@ -828,7 +836,7 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
         item->name = buffer;
         if (is_literal_symbol) tehssl_set_flag(item, LITERAL_SYMBOL);
     }
-    buffer = malloc(TEHSSL_CHUNK_SIZE);
+    buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
     tehssl_object_t newb = tehssl_alloc(vm, LINE);
     newb->item = item;
     current_line_tail->next = newb;
