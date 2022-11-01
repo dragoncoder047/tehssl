@@ -709,9 +709,11 @@ tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
 }
 
 // Tokenizer
+#define TEHSSL_SPECIAL_CHARS "{}[]();"
 // Returns empty string on eof, NULL on error
 char* tehssl_next_token(FILE* file) {
     char* buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
+    memset(buffer, 0, TEHSSL_CHUNK_SIZE);
     size_t buffersz = TEHSSL_CHUNK_SIZE;
     size_t i = 0;
     bool comment = false;
@@ -719,41 +721,54 @@ char* tehssl_next_token(FILE* file) {
     bool string = false;
     NEXTCHAR:
     char ch = fgetc(file);
+    if (ch != EOF) printf("\ni=%d CH=%c: ", i, ch); else printf("ch=EOF, ");
+    if (comment || informal) {
+        printf("i/c, ");
+        // exit comment at EOL
+        if (comment && (ch == '\n' || ch == EOF)) comment = false;
+        // exit informal at space
+        else if (informal && (isspace(ch) || ch == EOF)) informal = false;
+        // dicard comment and informal unless it is a special token
+        if (comment || strchr(TEHSSL_SPECIAL_CHARS, ch) == NULL) goto NEXTCHAR;
+    }
     // spaces only matter in strings, but they delimit other things
-    if (!string && isspace(ch)) {
+    else if (!string && isspace(ch)) {
+        printf("space outside of string, i=%ld\n", i);
+        informal = false;
         if (i == 0) goto NEXTCHAR;
         else return buffer;
     }
     // toggle stringmode
-    if (ch == '"') string = !string;
-    // everything is in a string
-    if (string) goto BUFPUT;
-    if (comment || informal) {
-        // exit comment at EOL
-        if (comment && ch == '\n') comment = false;
-        // exit informal at space
-        else if (informal && isspace(ch)) informal = false;
-        // dicard comment and informal
-        else goto NEXTCHAR;
-    }
-    if (i == 0 && 'a' <= ch && ch <= 'z') {
-        // informal tokens start with lowercase letter
-        informal = true;
-        goto NEXTCHAR;
+    if (ch == '"') {
+        string = !string;
+        if (i > 0) {
+            printf("i>0, ");
+            if (string) ungetc(ch, file);
+            return buffer;
+        }
     }
     if (ch == EOF) {
         if (!string) return buffer;
         else return NULL;
     }
+    // everything is in a string
+    if (string) goto BUFPUT;
     // Parens and ; are their own token
-    if (strchr("{}[]();", ch) != NULL) {
+    if (strchr(TEHSSL_SPECIAL_CHARS, ch) != NULL) {
         // no other char -> return paren as token
         if (i == 0) buffer[0] = ch;
         // other chars -> back up, stop, return that
         else ungetc(ch, file);
         return buffer;
     }
+    if (i == 0 && 'a' <= ch && ch <= 'z') {
+        // informal tokens start with lowercase letter
+        informal = true;
+        printf("informal=true, ");
+        goto NEXTCHAR;
+    }
     BUFPUT:
+    printf("->buf, ");
     // allocate more memory as needed
     if (i >= buffersz) {
         buffersz += TEHSSL_CHUNK_SIZE;
@@ -762,11 +777,14 @@ char* tehssl_next_token(FILE* file) {
     buffer[i] = ch;
     i++;
     if (i == 2 && buffer[0] == '~' && ch == '~') {
+        printf("got ~~ for comment, ");
         // go into comment mode
         comment = true;
         // discard ~~
-        free(buffer);
-        buffer = (char*)malloc(TEHSSL_CHUNK_SIZE);
+        memset(buffer, 0, buffersz);
+        buffer = (char*)realloc(buffer, TEHSSL_CHUNK_SIZE);
+        buffersz = TEHSSL_CHUNK_SIZE;
+        i = 0;
     }
     goto NEXTCHAR;
 }
@@ -1054,6 +1072,7 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
 // for pasting into https://cpp.sh/
 tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); return OK; }
 int main() {
+    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A step: 3 do { take the Square; Print the Fibbonaci of said square; }; Print \"DONE!!\" 123";
     // test 1
     printf("\n\n-----test 1: garbage collector----\n\n");
     tehssl_vm_t vm = tehssl_new_vm();
@@ -1074,17 +1093,28 @@ int main() {
 
     // test 2
     printf("\n\n-----test 2: tokenizer----\n\n");
-    const char* str = "Hello world! {}(){}()}{)}aa}Hell\"O;Hell O\"!;";
     FILE* s = fmemopen((void*)str, strlen(str), "r");
     char* token = NULL;
-    do {
+    while (!feof(s)) {
         token = tehssl_next_token(s);
-        printf("token-> %s\n", token);
-    } while (token != NULL);
+        if (token == NULL) {
+            printf("\n\nTOKENIZER ERROR!!");
+            break;
+        }
+        if (strlen(token) == 0) {
+            printf("\n\nEMPTY TOKEN!!");
+            free(token);
+            break;
+        }
+        printf("\n\ntoken-> %s\n\n", token);
+        free(token);
+    }
+    fclose(s);
+    free(s);
 
     // test 3
     printf("\n\n-----test 3: parser----\n\n");
-    tehssl_result_t r = tehssl_run_string(vm, "Hello world; 123; 456; { { { {MyFunction} i am a cow hear me moo Yikes Yikes Yikes 0x667 }}}");
+    tehssl_result_t r = tehssl_run_string(vm, str);
     printf("Returned %d: ", r);
     debug_print_type(vm->return_value->type);
     putchar('\n');
