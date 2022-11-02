@@ -732,7 +732,7 @@ char* tehssl_next_token(FILE* file) {
     else if (!string && isspace(ch)) {
         // printf("space outside of string, i=%ld\n", i);
         if (i == 0) goto NEXTCHAR;
-        else return buffer;
+        else goto DONE;
     }
     // toggle stringmode
     if (ch == '"') {
@@ -740,22 +740,25 @@ char* tehssl_next_token(FILE* file) {
         if (i > 0) {
             // printf("i>0, ");
             if (string) ungetc(ch, file);
-            return buffer;
+            goto DONE;
         }
     }
     if (ch == EOF) {
-        if (!string) return buffer;
-        else return NULL;
+        if (!string) goto DONE;
+        else {
+            free(buffer);
+            // unexpected EOF
+            return NULL;
+        }
     }
-    // everything is in a string
-    if (string) goto BUFPUT;
     // Parens and ; are their own token
-    if (strchr(TEHSSL_SPECIAL_CHARS, ch) != NULL) {
+    // unless in a string
+    if (!string && strchr(TEHSSL_SPECIAL_CHARS, ch) != NULL) {
         // no other char -> return paren as token
         if (i == 0) buffer[0] = ch;
-        // other chars -> back up, stop, return that
+        // other chars -> back up, stop, return what we've got so far
         else ungetc(ch, file);
-        return buffer;
+        goto DONE;
     }
     BUFPUT:
     // printf("->buf, ");
@@ -768,7 +771,6 @@ char* tehssl_next_token(FILE* file) {
     i++;
     if (i == 2 && buffer[0] == '~' && ch == '~') {
         // printf("got ~~ for comment, ");
-        // go into comment mode
         comment = true;
         // discard ~~
         memset(buffer, 0, buffersz);
@@ -777,6 +779,17 @@ char* tehssl_next_token(FILE* file) {
         i = 0;
     }
     goto NEXTCHAR;
+    DONE:
+    size_t len = strlen(buffer);
+    if ('a' <= buffer[0] && buffer[0] <= 'z' && buffer[len - 1] != ':') {
+        // printf("discarding informal, ");
+        memset(buffer, 0, buffersz);
+        buffer = (char*)realloc(buffer, TEHSSL_CHUNK_SIZE);
+        buffersz = TEHSSL_CHUNK_SIZE;
+        i = 0;
+        goto NEXTCHAR;
+    }
+    return buffer;
 }
 
 // Compiler
