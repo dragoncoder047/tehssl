@@ -1,13 +1,13 @@
 ~~ Using a loop
 Def Factorial {
     Let N be from the stack;
-    For each in Range 1 to N step: 1 {*} from 1;
+    For each in Range 1 to N .step 1 {*} from 1;
 };
 
 ~~ Using recursion
 Def Factorial
     Case 0     is {+ 1}
-	Case {> 0} is {Dup; - 1; * Factorial}
+	Case {> 0} is {Twin; - 1; * Factorial}
 	otherwise  is {Drop; NaN};
 
 Prints {
