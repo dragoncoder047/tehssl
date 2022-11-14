@@ -765,7 +765,6 @@ char* tehssl_next_token(FILE* file) {
         informal = true;
         goto NEXTCHAR;
     }
-    BUFPUT:
     // printf("->buf, ");
     // allocate more memory as needed
     if (i >= buffersz) {
