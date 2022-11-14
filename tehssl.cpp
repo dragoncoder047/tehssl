@@ -46,7 +46,7 @@ enum tehssl_typeid {
     DICT,        //   (key)        (value)      (next)
     LINE,        //                (item)       (next)
     BLOCK,       //                (code)       (next)
-    CLOSURE,     //   (scope)      (block)      (next)
+    CLOSURE,     //   (scope)      (block)
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*

@@ -14,9 +14,21 @@ TEHSSL has a few more requirements that that, so it uses 5 cells' worth for each
 
 Cells 3-5 change based on the object. Here are how all the types use them (may be out of date):
 
-|  Type | Cell 3 | Cell 4 | Cell 5 |
-|:-----:|:------ |:------ |:------ |
-|  LIST | unused | value  | next   |
-|  DICT | key    | value  | next   |
-|  LINE | unused | item   | next   |
-| BLOCK |        |        |        |
+|   Type   | Cell 3             | Cell 4         | Cell 5             |
+|:--------:|:------------------ |:-------------- |:------------------ |
+|   LIST   |                    | value          | next item          |
+|   DICT   | key                | value          | next entry         |
+|   LINE   |                    | item           | next thing in line |
+|   BLOCK  |                    | code           | next line          |
+|  CLOSURE | closed-over scope  | code block     |                    |
+|  NUMBER  | `double` (2 cells) |                |                    |
+|  SYMBOL  | `char*` name       |                |                    |
+|  STRING  | `char*` contents   |                |                    |
+|  STREAM  | `char*` id         | `FILE*`        |                    |
+| USERTYPE | `char*` typename   | any pointer    | any pointer        |
+|   SCOPE  | functions list     | variables list | parent scope       |
+| UFUNCTION         |   `char*` name                    |      function BLOCK          |    next function                |
+| CFUNCTION         |   `char*` name                    |      C function pointer          |    next function                |
+| TFUNCTION         |   `char*` type name                    |      C type function pointer          |    next type function                |
+| VARIABLE         |   `char*` name                    |      value          |    next variable                |
+| TOKEN         |   `char*` token contents                    |                |                     |
