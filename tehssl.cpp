@@ -1,14 +1,6 @@
-#ifdef __cplusplus
 #include <cstring>
 #include <cstdio>
 #include <iostream>
-#define TEHSSL_DEBUG
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#undef TEHSSL_DEBUG
-#endif
 
 // Config options
 #ifndef TEHSSL_MIN_HEAP_SIZE
@@ -53,7 +45,8 @@ enum tehssl_typeid {
     LIST,        //                (value)      (next)
     DICT,        //   (key)        (value)      (next)
     LINE,        //                (item)       (next)
-    BLOCK,       //   (parent)     (code)       (next)
+    BLOCK,       //                (code)       (next)
+    CLOSURE,     //   (scope)      (block)      (next)
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
@@ -147,6 +140,7 @@ void debug_print_type(tehssl_typeid_t t) {
         case DICT: printf("DICT"); break;
         case LINE: printf("LINE"); break;
         case BLOCK: printf("BLOCK"); break;
+        case CLOSURE: printf("CLOSURE"); break;
         case NUMBER: printf("NUMBER"); break;
         case SYMBOL: printf("SYMBOL"); break;
         case STRING: printf("STRING"); break;
@@ -253,6 +247,7 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
             // fallthrough
         case LIST:
         case LINE:
+        case CLOSURE:
             tehssl_markobject(vm, object->value);
             object = object->next;
             goto MARK;
@@ -496,6 +491,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
             // fallthrough
         case LIST:
         case LINE:
+        case CLOSURE:
         case CFUNCTION:
         case TFUNCTION:
             if (!tehssl_equal(vm, a->value, b->value)) return false;
@@ -520,6 +516,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
             }
             return type_handle->type_function(vm, CTYPE_COMPARE, a, (void*)b) == 0;
     }
+    return false; // unreachable, just to satisfy compiler
 }
 
 int tehssl_list_length(tehssl_object_t list) {
@@ -719,18 +716,21 @@ char* tehssl_next_token(FILE* file) {
     size_t i = 0;
     bool comment = false;
     bool string = false;
+    bool informal = false;
     NEXTCHAR:
     char ch = fgetc(file);
     // if (ch != EOF) printf("\ni=%d CH=%c: ", i, ch); else printf("ch=EOF, ");
-    if (comment) {
+    if (comment || informal) {
         // printf("c, ");
         // exit comment at EOL
-        if (ch == '\n' || ch == EOF) comment = false;
-        goto NEXTCHAR;
+        if (comment && (ch == '\n' || ch == EOF)) comment = false;
+        else if (informal && (isspace(ch) || ch == EOF)) informal = false;
+        if (comment || !strchr(TEHSSL_SPECIAL_CHARS, ch)) goto NEXTCHAR;
     }
     // spaces only matter in strings, but they delimit other things
     else if (!string && isspace(ch)) {
         // printf("space outside of string, i=%ld\n", i);
+        informal = false;
         if (i == 0) goto NEXTCHAR;
         else goto DONE;
     }
@@ -753,12 +753,17 @@ char* tehssl_next_token(FILE* file) {
     }
     // Parens and ; are their own token
     // unless in a string
-    if (!string && strchr(TEHSSL_SPECIAL_CHARS, ch) != NULL) {
+    if (!string && strchr(TEHSSL_SPECIAL_CHARS, ch)) {
         // no other char -> return paren as token
         if (i == 0) buffer[0] = ch;
         // other chars -> back up, stop, return what we've got so far
         else ungetc(ch, file);
         goto DONE;
+    }
+    if (i == 0 && 'a' <= ch && ch <= 'z') {
+        // informal tokens start with lowercase letter
+        informal = true;
+        goto NEXTCHAR;
     }
     BUFPUT:
     // printf("->buf, ");
@@ -780,15 +785,6 @@ char* tehssl_next_token(FILE* file) {
     }
     goto NEXTCHAR;
     DONE:
-    size_t len = strlen(buffer);
-    if ('a' <= buffer[0] && buffer[0] <= 'z' && buffer[len - 1] != ':') {
-        // printf("discarding informal, ");
-        memset(buffer, 0, buffersz);
-        buffer = (char*)realloc(buffer, TEHSSL_CHUNK_SIZE);
-        buffersz = TEHSSL_CHUNK_SIZE;
-        i = 0;
-        goto NEXTCHAR;
-    }
     return buffer;
 }
 
@@ -804,7 +800,7 @@ tehssl_result_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, teh
 }
 
 tehssl_result_t tehssl_run_string(tehssl_vm_t vm, const char* string) {
-    tehssl_object_t ss = tehssl_make_stream(vm, "stringstream", fmemopen((void*)string, strlen(string), "r"));
+    tehssl_object_t ss = tehssl_make_stream(vm, (char*)"stringstream", fmemopen((void*)string, strlen(string), "r"));
     tehssl_result_t r = tehssl_compile_until(vm, ss, vm->global_scope, EOF);
     TEHSSL_RETURN_ON_ERROR(r);
     tehssl_object_t rv = vm->return_value;
@@ -849,12 +845,10 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
     // TODO
 }
 
-#ifdef TEHSSL_DEBUG
-// Test code
-// for pasting into https://cpp.sh/
+#ifdef TEHSSL_TEST
 tehssl_result_t myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); return OK; }
-int main() {
-    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A step: 3 do { take the Square; Print the Fibbonaci of said square; }; Print \"DONE!!\" 123";
+int main(int argc, char* argv[]) {
+    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A .step 3 do { take the Square; Print the Fibbonaci of said square; }; Print \"DONE!!\" 123";
     tehssl_vm_t vm = tehssl_new_vm();
 
     // test 1
@@ -894,6 +888,7 @@ int main() {
         free(token);
     }
     fclose(s);
+    putchar('\n');
 
     // test 3
     // printf("\n\n-----test 3: parser----\n\n");
