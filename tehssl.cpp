@@ -11,14 +11,6 @@
 #define TEHSSL_CHUNK_SIZE 128
 #endif
 
-// Polyfills
-char* mystrdup(const char* str) {
-    size_t len = strlen(str) + 1;
-    char* dup = (char *)malloc(len);
-    strncpy(dup, str, len);
-    return dup;
-}
-
 // Datatypes
 enum tehssl_result {
     OK,
@@ -35,7 +27,6 @@ enum tehssl_result {
 enum tehssl_flag {
     GC_MARK,
     PRINTER_MARK,
-    MACRO_FUNCTION,
     LITERAL_SYMBOL
 };
 
@@ -50,15 +41,15 @@ enum tehssl_typeid {
     NUMBER,      //   double
     SYMBOL,      //   char*
     STRING,      //   char*
-    STREAM,      //   char*        FILE*                     char* is name
+    STREAM,      //   char*        FILE*
     USERTYPE,    //   char*        (ptr1)       (ptr2)
     // Special internal types
     SCOPE,       //   (functions)  (variables)  (parent)
-    UFUNCTION,   //   char*        (block)      (next)
-    CFUNCTION,   //   char*        cfun_t       (next)
+    UNFUNCTION,  //   char*        (block)      (next)
+    CNFUNCTION,  //   char*        fun_t        (next)
+    CMFUNCTION,  //   char*        macfun_t     (next)
     TFUNCTION,   //   char*        typefun_t    (next)
     VARIABLE,    //   char*        (value)      (next)
-    TOKEN        //   char*
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
@@ -77,7 +68,8 @@ typedef enum tehssl_result tehssl_result_t;
 typedef enum tehssl_type_action tehssl_type_action_t;
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
-typedef tehssl_result_t (*tehssl_cfun_t)(tehssl_vm_t, tehssl_object_t);
+typedef tehssl_result_t (*tehssl_fun_t)(tehssl_vm_t, tehssl_object_t);
+typedef tehssl_result_t (*tehssl_macfun_t)(tehssl_vm_t, tehssl_object_t*, FILE*);
 typedef int (*tehssl_typefun_t)(tehssl_vm_t, tehssl_type_action_t, tehssl_object_t, void*);
 typedef uint16_t tehssl_flags_t;
 
@@ -103,8 +95,9 @@ struct tehssl_object {
                 tehssl_object_t block;
                 tehssl_object_t ptr1;
                 FILE* file;
-                tehssl_cfun_t c_function;
+                tehssl_fun_t c_function;
                 tehssl_typefun_t type_function;
+                tehssl_macfun_t macro_function;
             };
             union {
                 tehssl_object_t next;
@@ -147,11 +140,10 @@ void debug_print_type(tehssl_typeid_t t) {
         case STREAM: printf("STREAM"); break;
         case USERTYPE: printf("USERTYPE"); break;
         case SCOPE: printf("SCOPE"); break;
-        case UFUNCTION: printf("UFUNCTION"); break;
-        case CFUNCTION: printf("CFUNCTION"); break;
+        case UNFUNCTION: printf("UNFUNCTION"); break;
+        case CNFUNCTION: printf("CNFUNCTION"); break;
         case TFUNCTION: printf("TFUNCTION"); break;
         case VARIABLE: printf("VARIABLE"); break;
-        case TOKEN: printf("TOKEN"); break;
     }
 }
 #endif
@@ -162,10 +154,9 @@ inline bool tehssl_has_name(tehssl_object_t object) {
         case STRING:
         case STREAM:
         case USERTYPE:
-        case UFUNCTION:
-        case CFUNCTION:
+        case UNFUNCTION:
+        case CNFUNCTION:
         case VARIABLE:
-        case TOKEN:
             return true;
         default:
             return false;
@@ -255,13 +246,12 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
         case SYMBOL:
         case STRING:
         case STREAM:
-        case TOKEN:
             break; // noop
-        case UFUNCTION:
+        case UNFUNCTION:
         case VARIABLE:
             tehssl_markobject(vm, object->value);
             // fallthrough
-        case CFUNCTION:
+        case CNFUNCTION:
         case TFUNCTION:
             object = object->next;
             goto MARK;
@@ -325,9 +315,9 @@ void tehssl_sweep(tehssl_vm_t vm) {
             }
             #ifdef TEHSSL_DEBUG
             if (unreached->type == NUMBER) printf(" number-> %g", unreached->number);
+            putchar('\n');
             #endif
             free(unreached);
-            putchar('\n');
             vm->num_objects--;
         } else {
             tehssl_clear_flag(*object, GC_MARK);
@@ -380,7 +370,7 @@ tehssl_object_t tehssl_make_string(tehssl_vm_t vm, const char* string) {
         object = object->next_object;
     }
     tehssl_object_t sobj = tehssl_alloc(vm, STRING);
-    sobj->name = mystrdup(string);
+    sobj->name = strdup(string);
     return sobj;
 }
 
@@ -393,7 +383,7 @@ tehssl_object_t tehssl_make_symbol(tehssl_vm_t vm, const char* name, bool is_lit
         object = object->next_object;
     }
     tehssl_object_t sobj = tehssl_alloc(vm, SYMBOL);
-    sobj->name = mystrdup(name);
+    sobj->name = strdup(name);
     if (is_literal) tehssl_set_flag(sobj, LITERAL_SYMBOL);
     return sobj;
 }
@@ -411,7 +401,7 @@ tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
 
 tehssl_object_t tehssl_make_stream(tehssl_vm_t vm, char* name, FILE* file) {
     tehssl_object_t sobj = tehssl_alloc(vm, STREAM);
-    sobj->name = mystrdup(name);
+    sobj->name = strdup(name);
     sobj->file = file;
     return sobj;
 }
@@ -430,8 +420,7 @@ tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, char* type, void* data) {
 
 // Lookup values in scope
 #define LOOKUP_FUNCTION 0
-#define LOOKUP_MACRO 1
-#define LOOKUP_VARIABLE 2
+#define LOOKUP_VARIABLE 1
 tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t where) {
     LOOKUP:
     if (scope == NULL || scope->type != SCOPE) return NULL;
@@ -439,7 +428,7 @@ tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t where) 
     if (where == LOOKUP_VARIABLE) result = scope->variables;
     else result = scope->functions;
     while (result != NULL) {
-        if (strcmp(result->name, name) == 0 && (where != LOOKUP_MACRO || tehssl_test_flag(result, MACRO_FUNCTION))) return result;
+        if (strcmp(result->name, name) == 0) return result;
         result = result->next;
     }
     scope = scope->parent;
@@ -483,7 +472,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
     switch (a->type) {
         case DICT:
         case SCOPE:
-        case UFUNCTION:
+        case UNFUNCTION:
         case VARIABLE:
         // case LINE:
         case BLOCK:
@@ -492,7 +481,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
         case LIST:
         case LINE:
         case CLOSURE:
-        case CFUNCTION:
+        case CNFUNCTION:
         case TFUNCTION:
             if (!tehssl_equal(vm, a->value, b->value)) return false;
             a = a->next;
@@ -503,7 +492,6 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
         case SYMBOL:
         case STRING:
         case STREAM:
-        case TOKEN:
             return tehssl_compare_strings(a->name, b->name, false, true, false);
         case USERTYPE:
             if (strcmp(a->name, b->name) != 0) return false;
@@ -600,11 +588,11 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //             line = line->next;
 //             continue;
 //         }
-//         if (macro->type == UFUNCTION) {
+//         if (macro->type == UNFUNCTION) {
 //             // not implemented
 //             tehssl_pop(&vm->gc_stack);
 //             return tehssl_error(vm, "todo: user-defined macros");
-//         } else if (macro->type == CFUNCTION) {
+//         } else if (macro->type == CNFUNCTION) {
 //             tehssl_push(vm, &vm->stack, line);
 //             macro->c_function(vm, scope);
 //             line = tehssl_pop(&vm->stack);
@@ -676,7 +664,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //                         #ifdef TEHSSL_DEBUG
 //                         printf("Nested function: %s\n", item->name);
 //                         #endif
-//                         if (fun->type == CFUNCTION) {
+//                         if (fun->type == CNFUNCTION) {
 //                             r = fun->c_function(vm, scope);
 //                         } else {
 //                             // reader handles scope links on lambda blocks
@@ -819,22 +807,21 @@ tehssl_result_t tehssl_run_string(tehssl_vm_t vm, const char* string) {
 // Register C functions
 #define IS_MACRO true
 #define NOT_MACRO false
-void tehssl_register_word(tehssl_vm_t vm, const char* name, tehssl_cfun_t fun, bool is_macro) {
+void tehssl_register_word(tehssl_vm_t vm, const char* name, tehssl_fun_t fun) {
     if (vm->global_scope == NULL) {
         vm->global_scope = tehssl_alloc(vm, SCOPE);
     }
-    tehssl_object_t fobj = tehssl_alloc(vm, CFUNCTION);
-    fobj->name = mystrdup(name);
+    tehssl_object_t fobj = tehssl_alloc(vm, CNFUNCTION);
+    fobj->name = strdup(name);
     fobj->c_function = fun;
     fobj->next = vm->global_scope->functions;
-    if (is_macro) tehssl_set_flag(fobj, MACRO_FUNCTION);
     vm->global_scope->functions = fobj;
 }
 
 // Register C types
 void tehssl_register_type(tehssl_vm_t vm, const char* name, tehssl_typefun_t fun) {
     tehssl_object_t t = tehssl_alloc(vm, TFUNCTION);
-    t->name = mystrdup(name);
+    t->name = strdup(name);
     t->type_function = fun;
     t->next = vm->type_functions;
     vm->type_functions = t;
@@ -862,7 +849,7 @@ int main(int argc, char* argv[]) {
         tehssl_push(vm, &vm->stack, tehssl_make_number(vm, 1.7E+123));
         tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
     }
-    tehssl_register_word(vm, "MyFunction", myfunction, NOT_MACRO);
+    tehssl_register_word(vm, "MyFunction", myfunction);
     printf("%lu objects\n", vm->num_objects);
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);

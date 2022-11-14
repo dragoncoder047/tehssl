@@ -21,7 +21,7 @@ void loop() {
     tehssl_init_builtins(vm);
 
     // Registers a custom function onto the global scope
-    tehssl_register_word(vm, "MyFunction", myfunction, NOT_MACRO);
+    tehssl_register_word(vm, "MyFunction", myfunction);
 
     // Run some code
     // TODO
