@@ -49,7 +49,7 @@ The tokenizer first does the job of stripping comments and informal syntax. From
 
 The resulting code structure is laid out like this:
 
-```txt
+```text
 root --> BLOCK --> LINE --> LINE --> LINE --> LINE --> null
            |        |        |        |        |
            |        V        V        V        V
@@ -75,4 +75,4 @@ Each of the `item` values can be a literal produced in step 3 above, or a sub-bl
 
 ## Evaluation
 
-Coming from the compiler/reader is the tre described above
+Coming from the compiler/reader is the tree described above

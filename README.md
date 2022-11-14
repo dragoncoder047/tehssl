@@ -4,6 +4,8 @@
 
 The Tiny Embedded Hot-Swapping Scripting Language.
 
-[TEHSSL Scripting guide](SCRIPTING.md)
+[TEHSSL scripting guide](SCRIPTING.md)
 
 [For C++ programmers: Embedding Guide](EMBEDDING.md)
+
+[Internals of how TEHSSL Works](INTERNALS.md)
