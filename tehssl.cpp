@@ -22,9 +22,6 @@ enum tehssl_status {
     OUT_OF_MEMORY
 };
 
-#define RIE(vm) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) return; } while (false)
-#define PRIE(vm, stack) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) tehssl_pop(&(stack)); return; } while (false)
-
 enum tehssl_flag {
     GC_MARK,
     PRINTER_MARK,
@@ -40,6 +37,7 @@ enum tehssl_typeid {
     BLOCK,       //                (code)       (next)
     CLOSURE,     //   (scope)      (block)
     NUMBER,      //   double
+    SINGLETON,   //   int32_t
     SYMBOL,      //   char*
     STRING,      //   char*
     STREAM,      //   char*        FILE*
@@ -62,11 +60,19 @@ enum tehssl_type_action {
     CTYPE_DESTROY
 };
 
+enum tehssl_singleton {
+    TRUE,
+    FALSE,
+    UNDEFINED,
+    DNE
+};
+
 // Typedefs
 typedef enum tehssl_typeid tehssl_typeid_t;
 typedef enum tehssl_flag tehssl_flag_t;
 typedef enum tehssl_status tehssl_status_t;
 typedef enum tehssl_type_action tehssl_type_action_t;
+typedef enum tehssl_singleton tehssl_singleton_t;
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
 typedef void (*tehssl_fun_t)(tehssl_vm_t, tehssl_object_t);
@@ -81,6 +87,7 @@ struct tehssl_object {
     tehssl_object_t next_object;
     union {
         double number;
+        tehssl_singleton_t singleton;
         struct {
             union {
                 tehssl_object_t key;
@@ -136,6 +143,7 @@ void debug_print_type(tehssl_typeid_t t) {
         case BLOCK: printf("BLOCK"); break;
         case CLOSURE: printf("CLOSURE"); break;
         case NUMBER: printf("NUMBER"); break;
+        case SINGLETON: printf("SINGLETON"); break;
         case SYMBOL: printf("SYMBOL"); break;
         case STRING: printf("STRING"); break;
         case STREAM: printf("STREAM"); break;
@@ -166,11 +174,13 @@ inline bool tehssl_has_name(tehssl_object_t object) {
 }
 
 inline bool tehssl_is_literal(tehssl_object_t object) {
+    if (object == NULL) return true;
     switch (object->type) {
         case SYMBOL:
             return tehssl_test_flag(object, LITERAL_SYMBOL);
         case LIST:
         case DICT:
+        case SINGLETON:
         case STRING:
         case STREAM:
         case NUMBER:
@@ -245,6 +255,7 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
             object = object->next;
             goto MARK;
         case NUMBER:
+        case SINGLETON:
         case SYMBOL:
         case STRING:
         case STREAM:
@@ -318,6 +329,7 @@ void tehssl_sweep(tehssl_vm_t vm) {
             }
             #ifdef TEHSSL_DEBUG
             if (unreached->type == NUMBER) printf(" number-> %g", unreached->number);
+            if (unreached->type == SINGLETON) printf(" singleton-> %i", unreached->singleton);
             putchar('\n');
             #endif
             free(unreached);
@@ -366,7 +378,7 @@ inline tehssl_object_t tehssl_pop(tehssl_object_t* stack) {
 }
 
 // Make objects
-tehssl_object_t tehssl_make_string(tehssl_vm_t vm, const char* string) {
+tehssl_object_t tehssl_make_string(tehssl_vm_t vm, char* string) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
         if (object->type == STRING && strcmp(object->name, string) == 0) return object;
@@ -379,7 +391,7 @@ tehssl_object_t tehssl_make_string(tehssl_vm_t vm, const char* string) {
 
 #define SYMBOL_LITERAL true
 #define SYMBOL_WORD false
-tehssl_object_t tehssl_make_symbol(tehssl_vm_t vm, const char* name, bool is_literal) {
+tehssl_object_t tehssl_make_symbol(tehssl_vm_t vm, char* name, bool is_literal) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
         if (object->type == SYMBOL && strcmp(object->name, name) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
@@ -399,6 +411,17 @@ tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
     }
     tehssl_object_t sobj = tehssl_alloc(vm, NUMBER);
     sobj->number = n;
+    return sobj;
+}
+
+tehssl_object_t tehssl_make_singleton(tehssl_vm_t vm, tehssl_singleton_t s) {
+    tehssl_object_t object = vm->first_object;
+    while (object != NULL) {
+        if (object->type == SINGLETON && object->singleton == s) return object;
+        object = object->next_object;
+    }
+    tehssl_object_t sobj = tehssl_alloc(vm, SINGLETON);
+    sobj->singleton = s;
     return sobj;
 }
 
@@ -441,7 +464,7 @@ tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t where) 
 
 // Helper functions
 void tehssl_error(tehssl_vm_t vm, const char* message) {
-    vm->return_value = tehssl_make_string(vm, message);
+    vm->return_value = tehssl_make_string(vm, (char*)message);
     vm->status = ERROR;
 }
 
@@ -453,8 +476,11 @@ void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
     vm->status = ERROR;
 }
 
+#define IFERR(vm) if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY)
+#define RIE(vm) do { IFERR(vm) return; } while (false)
+#define PRIE(vm, stack) do { IFERR(vm) { tehssl_pop(&(stack)); return; } } while (false)
 #define ERR(vm, msg) do { tehssl_error(vm, (msg)); return; } while (false) 
-#define ERR2(vm, msg, detail) do { tehssl_error(vm, (msg), (detail)); return; } while (false) 
+#define ERR2(vm, msg, detail) do { tehssl_error(vm, (msg), (detail)); return; } while (false)
 
 bool tehssl_compare_numbers(double a, double b, bool lt, bool eq, bool gt) {
     if (a < b) return lt;
@@ -497,6 +523,8 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
             goto CMP;
         case NUMBER:
             return tehssl_compare_numbers(a->number, b->number, false, true, false);
+        case SINGLETON:
+            return a->singleton == b->singleton;
         case SYMBOL:
         case STRING:
         case STREAM:
@@ -569,137 +597,6 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 }
 
 // C functions
-
-
-// Evaluator
-// void tehssl_macro_preprocess(tehssl_vm_t vm, tehssl_object_t line, tehssl_object_t scope) {
-//     // This also reverses the line, so it can be evaluated right-to-left, but read in and stored left-to-right
-//     tehssl_push(vm, &vm->gc_stack, NULL);
-//     while (line != NULL) {
-//         tehssl_object_t item = line->value;
-//         if (!tehssl_has_name(item) || tehssl_is_literal(item)) {
-//             #ifdef TEHSSL_DEBUG
-//             printf("Preprocess -> Got a literal: ");
-//             debug_print_type(item->type);
-//             putchar('\n');
-//             #endif
-//             tehssl_push(vm, &vm->gc_stack->value, item, LINE);
-//             line = line->next;
-//             continue;
-//         }
-//         tehssl_object_t macro = tehssl_lookup(scope, item->name, LOOKUP_MACRO);
-//         if (macro == NULL) {
-//             #ifdef TEHSSL_DEBUG
-//             printf("Preprocess -> Not macro: %s\n", item->name);
-//             #endif
-//             tehssl_push(vm, &vm->gc_stack->value, item, LINE);
-//             line = line->next;
-//             continue;
-//         }
-//         if (macro->type == UNFUNCTION) {
-//             // not implemented
-//             tehssl_pop(&vm->gc_stack);
-//             ERR(vm, "todo: user-defined macros");
-//         } else if (macro->type == CNFUNCTION) {
-//             tehssl_push(vm, &vm->stack, line);
-//             macro->c_function(vm, scope);
-//             line = tehssl_pop(&vm->stack);
-//             tehssl_push(vm, &vm->gc_stack->value, line->value, LINE);
-//             line = line->next;
-//         } else {
-//             // something's wrong
-//             ERR(vm, "defined non-function as a macro");
-//         }
-//     }
-//     vm->return_value = tehssl_pop(&vm->gc_stack);
-//     vm->status = OK;
-// }
-
-// void tehssl_fix_line_links(tehssl_object_t line_head) {
-//     // Assuming the ->next fields are all correct, and it is a LINE
-//     // fill in the ->prev fields
-//     while (line_head != NULL) {
-//         if (line_head->next != NULL) line_head->next->prev = line_head;
-//         line_head = line_head->next;
-//     }
-// }
-
-#ifndef yield
-#define yield()
-#endif
-
-// void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
-//     EVAL:
-//     yield();
-//     tehssl_push(vm, &vm->gc_stack, block);
-//     if (tehssl_is_literal(block)) {
-//         #ifdef TEHSSL_DEBUG
-//         printf("Got a literal: ");
-//         debug_print_type(block->type);
-//         putchar('\n');
-//         #endif
-//         tehssl_push(vm, &vm->stack, block);
-//         block = NULL;
-//     }
-//     if (block == NULL) {
-//         #ifdef TEHSSL_DEBUG
-//         printf("Block is null, returning\n");
-//         #endif
-//         tehssl_pop(&vm->gc_stack);
-//         return OK;
-//     }
-//     tehssl_object_t scope = block->scope;
-//     tehssl_macro_preprocess(vm, block->code, scope);
-//     PRIE(vm, vm->gc_stack);
-//     tehssl_object_t ll = vm->return_value;
-//     // tehssl_fix_line_links(ll);
-//     while (ll != NULL) {
-//         // eval the line
-//         tehssl_object_t item = ll->value;
-//         if (tehssl_is_literal(item)) {
-//             tehssl_push(vm, &vm->stack, item);
-//         } else {
-//             if (item->type == SYMBOL) { // literals will have been caught by tehssl_is_literal()
-//                 tehssl_object_t var = tehssl_lookup(scope, item->name, LOOKUP_VARIABLE);
-//                 if (var != NULL) {
-//                     #ifdef TEHSSL_DEBUG
-//                     printf("Variable: %s\n", item->name);
-//                     #endif
-//                     tehssl_push(vm, &vm->stack, var->value);
-//                 } else {
-//                     tehssl_object_t fun = tehssl_lookup(scope, item->name, LOOKUP_FUNCTION);
-//                     if (fun != NULL) {
-//                         #ifdef TEHSSL_DEBUG
-//                         printf("Nested function: %s\n", item->name);
-//                         #endif
-//                         if (fun->type == CNFUNCTION) {
-//                             r = fun->c_function(vm, scope);
-//                         } else {
-//                             // reader handles scope links on lambda blocks
-//                             r = tehssl_eval(vm, fun->block);
-//                         }
-//                     } else {
-//                         #ifdef TEHSSL_DEBUG
-//                         printf("Undefined word: %s\n", item->name);
-//                         #endif
-//                         ERR2(vm, "undefined word", item->name);
-//                     }
-//                 }
-//             } else {
-//                 #ifdef TEHSSL_DEBUG
-//                 printf("Invalid eval: ");
-//                 debug_print_type(block->type);
-//                 putchar('\n');
-//                 #endif
-//                 ERR(vm, "not valid here");
-//             }
-//         }
-//         ll = ll->next;
-//         PRIE(vm, vm->gc_stack);
-//     }
-//     block = block->next;
-//     goto EVAL;
-// }
 
 // Tokenizer
 #define TEHSSL_SPECIAL_CHARS "{}[]();"
@@ -783,18 +680,138 @@ char* tehssl_next_token(FILE* file) {
 }
 
 // Compiler
-void tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, char stop) {
-    if (stream == NULL) return;
-    if (stream->type != STREAM) {
-        tehssl_error(vm, "can't compile from a non-stream");
-        return;
-    }
-    FILE* file = stream->file;
+tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, char stop) {
+    if (stream == NULL || stream->type != STREAM) return NULL;
+    FILE* s = stream->file;
+    tehssl_push(vm, &vm->gc_stack, NULL);
     tehssl_push(vm, &vm->gc_stack, stream);
-    DONE:
+    tehssl_object_t* block_tail = &vm->gc_stack->next->value;
+    // Outer loop: Lines
+    while (!feof(s)) {
+        #ifdef TEHSSL_DEBUG
+        printf("Top of Outer loop\n");
+        #endif
+        tehssl_object_t c_line = NULL;
+        tehssl_object_t* line_tail = &c_line;
+        char* token = NULL;
+        // Inner loop: items on the line
+        while (!feof(s)) {
+            #ifdef TEHSSL_DEBUG
+            printf("Top of Inner loop\n");
+            #endif
+            token = tehssl_next_token(s);
+            if (token == NULL) {
+                #ifdef TEHSSL_DEBUG
+                printf("Unexpected EOF\n");
+                #endif
+                tehssl_error(vm, "unexpected EOF");
+                tehssl_pop(&vm->gc_stack);
+                tehssl_pop(&vm->gc_stack);
+                return NULL;
+            }
+            if ((strlen(token) == 0 && stop == EOF) || token[0] == stop) {
+                #ifdef TEHSSL_DEBUG
+                printf("Hit Stop, returning\n");
+                #endif
+                free(token);
+                tehssl_pop(&vm->gc_stack);
+                return tehssl_pop(&vm->gc_stack);
+            }
+            tehssl_object_t item = NULL;
+            if (token[0] == ';') {
+                #ifdef TEHSSL_DEBUG
+                printf("Semicolon\n");
+                #endif
+                free(token);
+                break;
+            }
+            else if (token[0] == '{') {
+                free(token);
+                #ifdef TEHSSL_DEBUG
+                printf("Bracket\n");
+                #endif
+                item = tehssl_compile_until(vm, stream, '}');
+            }
+            else {
+                // literal
+                double num;
+                if (sscanf(token, "%lf", &num) == 1) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("Number: %lf\n", num);
+                    #endif
+                    item = tehssl_make_number(vm, num);
+                } else if (strcmp(token, "NaN") == 0) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("NAN\n");
+                    #endif
+                    item = tehssl_make_number(vm, 0.0f / 0.0f);
+                } else if (strcmp(token, "True") == 0) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("TRUE\n");
+                    #endif
+                    item = tehssl_make_singleton(vm, TRUE);
+                } else if (strcmp(token, "False") == 0) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("FALSE\n");
+                    #endif
+                    item = tehssl_make_singleton(vm, FALSE);
+                } else if (strcmp(token, "Undefined") == 0) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("UNDEFINED\n");
+                    #endif
+                    item = tehssl_make_singleton(vm, UNDEFINED);
+                } else if (strcmp(token, "DNE") == 0) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("DNEX\n");
+                    #endif
+                    item = tehssl_make_singleton(vm, DNE);
+                } else if (strcmp(token, "Null") == 0) {
+                    #ifdef TEHSSL_DEBUG
+                    printf("Nul\n");
+                    #endif
+                    // item is already NULL
+                } else if (token[0] == '"') {
+                    #ifdef TEHSSL_DEBUG
+                    printf("String: %s\n", token + 1);
+                    #endif
+                    item = tehssl_make_string(vm, token + 1);
+                } else if (token[0]  == ':') {
+                    #ifdef TEHSSL_DEBUG
+                    printf("Literal symbol: %s\n", token + 1);
+                    #endif
+                    item = tehssl_make_symbol(vm, token + 1, SYMBOL_LITERAL);
+                } else {
+                    #ifdef TEHSSL_DEBUG
+                    printf("Normal symbol: %s\n", token);
+                    #endif
+                    item = tehssl_make_symbol(vm, token, SYMBOL_WORD);
+                }
+                free(token);
+                *line_tail = tehssl_alloc(vm, LINE);
+                (*line_tail)->value = item;
+                line_tail = &(*line_tail)->next;
+            }
+            #ifdef TEHSSL_DEBUG
+            printf("Bottom of outer loop\n");
+            #endif
+            *block_tail = tehssl_alloc(vm, BLOCK);
+            (*block_tail)->value = c_line;
+            block_tail = &(*block_tail)->next;
+        }
+    }
+    #ifdef TEHSSL_DEBUG
+    printf("feof() false, returning\n");
+    #endif
     tehssl_pop(&vm->gc_stack);
-    vm->status = OK;
+    return tehssl_pop(&vm->gc_stack);
 }
+
+// Evaluator
+
+
+#ifndef yield
+#define yield()
+#endif
 
 void tehssl_run_string(tehssl_vm_t vm, const char* string) {
     tehssl_object_t ss = tehssl_make_stream(vm, (char*)"stringstream", fmemopen((void*)string, strlen(string), "r"));
@@ -887,11 +904,15 @@ int main(int argc, char* argv[]) {
     putchar('\n');
 
     // test 3
-    // printf("\n\n-----test 3: parser----\n\n");
-    // tehssl_run_string(vm, str);
-    // printf("Returned %d: ", vm->status);
-    // debug_print_type(vm->return_value->type);
-    // putchar('\n');
+    printf("\n\n-----test 3: compiler----\n\n");
+    printf("making stringstream...\n");
+    s = fmemopen((void*)str, strlen(str), "r");
+    tehssl_object_t stream = tehssl_make_stream(vm, (char*)"conststringstream", s);
+    tehssl_object_t c = tehssl_compile_until(vm, stream, EOF);
+    printf("Returned %d: ", vm->status);
+    debug_print_type(c->type);
+    fclose(s);
+    putchar('\n');
 
     printf("\n\n-----tests complete----\n\n");
 
