@@ -222,6 +222,11 @@ tehssl_object_t tehssl_alloc(tehssl_vm_t vm, tehssl_typeid_t type) {
     object->next_object = vm->first_object;
     vm->first_object = object;
     vm->num_objects++;
+    #ifdef TEHSSL_DEBUG
+    printf("Allocating a ");
+    debug_print_type(type);
+    printf(": Now have %zu objects\n", vm->num_objects);
+    #endif
     return object;
 }
 
@@ -292,7 +297,7 @@ void tehssl_markall(tehssl_vm_t vm) {
 
 void tehssl_sweep(tehssl_vm_t vm) {
     tehssl_object_t* object = &vm->first_object;
-    while (*object) {
+    while (*object != NULL) {
         if (!tehssl_test_flag(*object, GC_MARK)) {
             tehssl_object_t unreached = *object;
             *object = unreached->next_object;
@@ -330,11 +335,15 @@ void tehssl_sweep(tehssl_vm_t vm) {
             #ifdef TEHSSL_DEBUG
             if (unreached->type == NUMBER) printf(" number-> %g", unreached->number);
             if (unreached->type == SINGLETON) printf(" singleton-> %i", unreached->singleton);
-            putchar('\n');
+            printf(", Next_object a "); debug_print_type((*object)->type);
+            printf(": Now have %lu objects\n", vm->num_objects - 1);
             #endif
             free(unreached);
             vm->num_objects--;
         } else {
+            #ifdef TEHSSL_DEBUG
+            printf("Skipping marked object\n");
+            #endif
             tehssl_clear_flag(*object, GC_MARK);
             object = &(*object)->next_object;
         }
@@ -342,11 +351,18 @@ void tehssl_sweep(tehssl_vm_t vm) {
 }
 
 size_t tehssl_gc(tehssl_vm_t vm) {
+    #ifdef TEHSSL_DEBUG
+    printf("Entering GC\n");
+    #endif
     size_t n = vm->num_objects;
     tehssl_markall(vm);
     tehssl_sweep(vm);
     vm->next_gc = vm->num_objects == 0 ? TEHSSL_MIN_HEAP_SIZE : vm->num_objects * 2;
-    return n - vm->num_objects;
+    size_t freed = n - vm->num_objects;
+    #ifdef TEHSSL_DEBUG
+    printf("GC done, freed %zu objects\n", freed);
+    #endif
+    return freed;
 }
 
 void tehssl_destroy(tehssl_vm_t vm) {
