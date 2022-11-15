@@ -13,7 +13,7 @@
 #endif
 
 // Datatypes
-enum tehssl_result {
+enum tehssl_status {
     OK,
     ERROR,
     RETURN,
@@ -22,8 +22,8 @@ enum tehssl_result {
     OUT_OF_MEMORY
 };
 
-#define TEHSSL_RETURN_ON_ERROR(vm) do { if ((vm)->result_code == ERROR || (vm)->result_code == OUT_OF_MEMORY) return; } while (false)
-#define TEHSSL_POP_AND_RETURN_ON_ERROR(vm, stack) do { if ((vm)->result_code == ERROR || (vm)->result_code == OUT_OF_MEMORY) tehssl_pop(&(stack)); return; } while (false)
+#define TEHSSL_RETURN_ON_ERROR(vm) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) return; } while (false)
+#define TEHSSL_POP_AND_RETURN_ON_ERROR(vm, stack) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) tehssl_pop(&(stack)); return; } while (false)
 
 enum tehssl_flag {
     GC_MARK,
@@ -65,7 +65,7 @@ enum tehssl_type_action {
 // Typedefs
 typedef enum tehssl_typeid tehssl_typeid_t;
 typedef enum tehssl_flag tehssl_flag_t;
-typedef enum tehssl_result tehssl_result_t;
+typedef enum tehssl_status tehssl_status_t;
 typedef enum tehssl_type_action tehssl_type_action_t;
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
@@ -115,7 +115,7 @@ struct tehssl_vm {
     tehssl_object_t return_value;
     tehssl_object_t global_scope;
     tehssl_object_t gc_stack;
-    tehssl_result_t result_code;
+    tehssl_status_t status;
     tehssl_object_t first_object;
     tehssl_object_t type_functions;
     size_t num_objects;
@@ -194,7 +194,7 @@ tehssl_vm_t tehssl_new_vm() {
     vm->gc_stack = NULL;
     vm->type_functions = NULL;
     vm->first_object = NULL;
-    vm->result_code = OK;
+    vm->status = OK;
     vm->num_objects = 0;
     vm->next_gc = TEHSSL_MIN_HEAP_SIZE;
     return vm;
@@ -204,7 +204,7 @@ tehssl_object_t tehssl_alloc(tehssl_vm_t vm, tehssl_typeid_t type) {
     if (vm->num_objects == vm->next_gc) tehssl_gc(vm);
     tehssl_object_t object = (tehssl_object_t)malloc(sizeof(struct tehssl_object));
     if (!object) {
-        vm->result_code = OUT_OF_MEMORY;
+        vm->status = OUT_OF_MEMORY;
         return NULL;
     }
     memset(object, 0, sizeof(struct tehssl_object));
@@ -442,7 +442,7 @@ tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t where) 
 // Helper functions
 void tehssl_error(tehssl_vm_t vm, const char* message) {
     vm->return_value = tehssl_make_string(vm, message);
-    vm->result_code = ERROR;
+    vm->status = ERROR;
 }
 
 void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
@@ -450,7 +450,7 @@ void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
     asprintf(&buf, "%s: %s", message, detail);
     vm->return_value = tehssl_alloc(vm, STRING);
     vm->return_value->name = buf;
-    vm->result_code = ERROR;
+    vm->status = ERROR;
 }
 
 bool tehssl_compare_numbers(double a, double b, bool lt, bool eq, bool gt) {
@@ -611,7 +611,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //         }
 //     }
 //     vm->return_value = tehssl_pop(&vm->gc_stack);
-//     vm->result_code = OK;
+//     vm->status = OK;
 // }
 
 // void tehssl_fix_line_links(tehssl_object_t line_head) {
@@ -627,7 +627,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 #define yield()
 #endif
 
-// tehssl_result_t tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
+// void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block) {
 //     EVAL:
 //     yield();
 //     tehssl_push(vm, &vm->gc_stack, block);
@@ -791,7 +791,7 @@ void tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, tehssl_object_
     tehssl_push(vm, &vm->gc_stack, stream);
     DONE:
     tehssl_pop(&vm->gc_stack);
-    vm->result_code = OK;
+    vm->status = OK;
 }
 
 void tehssl_run_string(tehssl_vm_t vm, const char* string) {
@@ -886,8 +886,8 @@ int main(int argc, char* argv[]) {
 
     // test 3
     // printf("\n\n-----test 3: parser----\n\n");
-    // tehssl_result_t r = tehssl_run_string(vm, str);
-    // printf("Returned %d: ", r);
+    // tehssl_run_string(vm, str);
+    // printf("Returned %d: ", vm->status);
     // debug_print_type(vm->return_value->type);
     // putchar('\n');
 
