@@ -22,8 +22,8 @@ enum tehssl_status {
     OUT_OF_MEMORY
 };
 
-#define TEHSSL_RETURN_ON_ERROR(vm) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) return; } while (false)
-#define TEHSSL_POP_AND_RETURN_ON_ERROR(vm, stack) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) tehssl_pop(&(stack)); return; } while (false)
+#define RIE(vm) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) return; } while (false)
+#define PRIE(vm, stack) do { if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY) tehssl_pop(&(stack)); return; } while (false)
 
 enum tehssl_flag {
     GC_MARK,
@@ -453,6 +453,9 @@ void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
     vm->status = ERROR;
 }
 
+#define ERR(vm, msg) do { tehssl_error(vm, (msg)); return; } while (false) 
+#define ERR2(vm, msg, detail) do { tehssl_error(vm, (msg), (detail)); return; } while (false) 
+
 bool tehssl_compare_numbers(double a, double b, bool lt, bool eq, bool gt) {
     if (a < b) return lt;
     if (a == b) return eq;
@@ -596,8 +599,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //         if (macro->type == UNFUNCTION) {
 //             // not implemented
 //             tehssl_pop(&vm->gc_stack);
-//             tehssl_error(vm, "todo: user-defined macros");
-//             return;
+//             ERR(vm, "todo: user-defined macros");
 //         } else if (macro->type == CNFUNCTION) {
 //             tehssl_push(vm, &vm->stack, line);
 //             macro->c_function(vm, scope);
@@ -606,8 +608,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //             line = line->next;
 //         } else {
 //             // something's wrong
-//             tehssl_error(vm, "defined non-function as a macro");
-//             return;
+//             ERR(vm, "defined non-function as a macro");
 //         }
 //     }
 //     vm->return_value = tehssl_pop(&vm->gc_stack);
@@ -649,7 +650,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //     }
 //     tehssl_object_t scope = block->scope;
 //     tehssl_macro_preprocess(vm, block->code, scope);
-//     TEHSSL_POP_AND_RETURN_ON_ERROR(vm, vm->gc_stack);
+//     PRIE(vm, vm->gc_stack);
 //     tehssl_object_t ll = vm->return_value;
 //     // tehssl_fix_line_links(ll);
 //     while (ll != NULL) {
@@ -681,8 +682,7 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //                         #ifdef TEHSSL_DEBUG
 //                         printf("Undefined word: %s\n", item->name);
 //                         #endif
-//                         tehssl_error(vm, "undefined word", item->name);
-//                         return;
+//                         ERR2(vm, "undefined word", item->name);
 //                     }
 //                 }
 //             } else {
@@ -691,12 +691,11 @@ void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, 
 //                 debug_print_type(block->type);
 //                 putchar('\n');
 //                 #endif
-//                 tehssl_error(vm, "not valid here");
-//                 return;
+//                 ERR(vm, "not valid here");
 //             }
 //         }
 //         ll = ll->next;
-//         TEHSSL_POP_AND_RETURN_ON_ERROR(vm, vm->gc_stack);
+//         PRIE(vm, vm->gc_stack);
 //     }
 //     block = block->next;
 //     goto EVAL;
@@ -784,9 +783,12 @@ char* tehssl_next_token(FILE* file) {
 }
 
 // Compiler
-void tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, tehssl_object_t scope, char stop) {
+void tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, char stop) {
     if (stream == NULL) return;
-    if (stream->type != STREAM) return tehssl_error(vm, "can't compile from a non-stream");
+    if (stream->type != STREAM) {
+        tehssl_error(vm, "can't compile from a non-stream");
+        return;
+    }
     FILE* file = stream->file;
     tehssl_push(vm, &vm->gc_stack, stream);
     DONE:
@@ -796,8 +798,8 @@ void tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, tehssl_object_
 
 void tehssl_run_string(tehssl_vm_t vm, const char* string) {
     tehssl_object_t ss = tehssl_make_stream(vm, (char*)"stringstream", fmemopen((void*)string, strlen(string), "r"));
-    tehssl_compile_until(vm, ss, vm->global_scope, EOF);
-    TEHSSL_RETURN_ON_ERROR(vm);
+    tehssl_compile_until(vm, ss, EOF);
+    RIE(vm);
     tehssl_object_t rv = vm->return_value;
     #ifdef TEHSSL_DEBUG
     if (rv == NULL) {
