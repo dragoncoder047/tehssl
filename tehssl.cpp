@@ -1,6 +1,7 @@
+#include <cstdlib>
 #include <cstring>
 #include <cstdio>
-#include <iostream>
+#include <cctype>
 
 // Config options
 #ifndef TEHSSL_MIN_HEAP_SIZE
@@ -49,7 +50,7 @@ enum tehssl_typeid {
     CNFUNCTION,  //   char*        fun_t        (next)
     CMFUNCTION,  //   char*        macfun_t     (next)
     TFUNCTION,   //   char*        typefun_t    (next)
-    VARIABLE,    //   char*        (value)      (next)
+    VARIABLE     //   char*        (value)      (next)
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
 
@@ -142,6 +143,7 @@ void debug_print_type(tehssl_typeid_t t) {
         case SCOPE: printf("SCOPE"); break;
         case UNFUNCTION: printf("UNFUNCTION"); break;
         case CNFUNCTION: printf("CNFUNCTION"); break;
+        case CMFUNCTION: printf("CMFUNCTION"); break;
         case TFUNCTION: printf("TFUNCTION"); break;
         case VARIABLE: printf("VARIABLE"); break;
     }
@@ -252,6 +254,7 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
             tehssl_markobject(vm, object->value);
             // fallthrough
         case CNFUNCTION:
+        case CMFUNCTION:
         case TFUNCTION:
             object = object->next;
             goto MARK;
@@ -482,6 +485,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
         case LINE:
         case CLOSURE:
         case CNFUNCTION:
+        case CMFUNCTION:
         case TFUNCTION:
             if (!tehssl_equal(vm, a->value, b->value)) return false;
             a = a->next;
@@ -883,6 +887,7 @@ int main(int argc, char* argv[]) {
     // debug_print_type(vm->return_value->type);
     // putchar('\n');
 
+    printf("\n\n-----tests complete----\n\n");
 
     tehssl_destroy(vm);
 }
