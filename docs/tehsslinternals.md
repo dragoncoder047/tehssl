@@ -22,6 +22,7 @@ Cells 3-5 change based on the object. Here are how all the types use them (may b
 | BLOCK      |                          | code                     | next line          |
 | CLOSURE    | closed-over scope        | code block               |                    |
 | NUMBER     | `double` (upper 32 bits) | `double` (lower 32 bits) |                    |
+| SINGLETON  | singleton ID             |                          |                    |
 | SYMBOL     | `char*` name             |                          |                    |
 | STRING     | `char*` contents         |                          |                    |
 | STREAM     | `char*` id               | `FILE*`                  |                    |
