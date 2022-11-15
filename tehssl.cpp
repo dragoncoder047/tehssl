@@ -696,14 +696,11 @@ char* tehssl_next_token(FILE* file) {
 }
 
 // Compiler
-tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, char stop) {
-    if (stream == NULL || stream->type != STREAM) return NULL;
-    FILE* s = stream->file;
+tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
     tehssl_push(vm, &vm->gc_stack, NULL);
-    tehssl_push(vm, &vm->gc_stack, stream);
-    tehssl_object_t* block_tail = &vm->gc_stack->next->value;
+    tehssl_object_t* block_tail = &vm->gc_stack->value;
     // Outer loop: Lines
-    while (!feof(s)) {
+    while (!feof(stream)) {
         #ifdef TEHSSL_DEBUG
         printf("Top of Outer loop\n");
         #endif
@@ -711,17 +708,16 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, cha
         tehssl_object_t* line_tail = &c_line;
         char* token = NULL;
         // Inner loop: items on the line
-        while (!feof(s)) {
+        while (!feof(stream)) {
             #ifdef TEHSSL_DEBUG
             printf("Top of Inner loop\n");
             #endif
-            token = tehssl_next_token(s);
+            token = tehssl_next_token(stream);
             if (token == NULL) {
                 #ifdef TEHSSL_DEBUG
                 printf("Unexpected EOF\n");
                 #endif
                 tehssl_error(vm, "unexpected EOF");
-                tehssl_pop(&vm->gc_stack);
                 tehssl_pop(&vm->gc_stack);
                 return NULL;
             }
@@ -730,7 +726,6 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, cha
                 printf("Hit Stop, returning\n");
                 #endif
                 free(token);
-                tehssl_pop(&vm->gc_stack);
                 return tehssl_pop(&vm->gc_stack);
             }
             tehssl_object_t item = NULL;
@@ -818,7 +813,6 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, cha
     #ifdef TEHSSL_DEBUG
     printf("feof() false, returning\n");
     #endif
-    tehssl_pop(&vm->gc_stack);
     return tehssl_pop(&vm->gc_stack);
 }
 
@@ -830,10 +824,9 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, tehssl_object_t stream, cha
 #endif
 
 void tehssl_run_string(tehssl_vm_t vm, const char* string) {
-    tehssl_object_t ss = tehssl_make_stream(vm, (char*)"stringstream", fmemopen((void*)string, strlen(string), "r"));
-    tehssl_compile_until(vm, ss, EOF);
+    FILE* ss = fmemopen((void*)string, strlen(string), "r");
+    tehssl_object_t rv = tehssl_compile_until(vm, ss, EOF);
     RIE(vm);
-    tehssl_object_t rv = vm->return_value;
     #ifdef TEHSSL_DEBUG
     if (rv == NULL) {
         printf("compile returned NULL!!\n");
@@ -923,8 +916,7 @@ int main(int argc, char* argv[]) {
     printf("\n\n-----test 3: compiler----\n\n");
     printf("making stringstream...\n");
     s = fmemopen((void*)str, strlen(str), "r");
-    tehssl_object_t stream = tehssl_make_stream(vm, (char*)"conststringstream", s);
-    tehssl_object_t c = tehssl_compile_until(vm, stream, EOF);
+    tehssl_object_t c = tehssl_compile_until(vm, s, EOF);
     printf("Returned %d: ", vm->status);
     debug_print_type(c->type);
     fclose(s);
