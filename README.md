@@ -12,4 +12,4 @@ The Tiny Embedded Hot-Swapping Scripting Language.
 
 ## Known Bugs
 
-* The garbage collector chokes on `fmemopen()`'ed streams for some reason; I have no idea why. PRs welcome.
+None as of yet.

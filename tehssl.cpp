@@ -310,7 +310,6 @@ void tehssl_sweep(tehssl_vm_t vm) {
                 printf(" +FILE");
                 #endif
                 if (unreached->file != NULL) fclose(unreached->file);
-                free(unreached->file);
                 unreached->file = NULL;
             }
             else if (unreached->type == USERTYPE) {
@@ -875,10 +874,9 @@ int main(int argc, char* argv[]) {
     const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A -step 3 do { take the Square; Print the Fibbonaci of said square; }; Print \"DONE!!\" 123";
     tehssl_vm_t vm = tehssl_new_vm();
 
-    // test 1
     printf("\n\n-----test 1: garbage collector----\n\n");
     // Make some garbage
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 50; i++) {
         tehssl_make_number(vm, 123);
         tehssl_make_number(vm, 456.789123);
         tehssl_make_string(vm, "i am cow hear me moo");
@@ -892,7 +890,6 @@ int main(int argc, char* argv[]) {
     tehssl_gc(vm);
     printf("%lu objects after gc\n", vm->num_objects);
 
-    // test 2
     printf("\n\n-----test 2: tokenizer----\n\n");
     FILE* s = fmemopen((void*)str, strlen(str), "r");
     char* token = NULL;
@@ -914,7 +911,6 @@ int main(int argc, char* argv[]) {
     fclose(s);
     putchar('\n');
 
-    // test 3
     printf("\n\n-----test 3: compiler----\n\n");
     printf("making stringstream...\n");
     s = fmemopen((void*)str, strlen(str), "r");
@@ -922,7 +918,14 @@ int main(int argc, char* argv[]) {
     printf("Returned %d: ", vm->status);
     debug_print_type(c->type);
     fclose(s);
-    putchar('\n');
+    printf("collecting garbage\n");
+    tehssl_gc(vm);
+
+    printf("\n\n-----test 4: freeing a fmemopen()'ed stream----\n\n");
+    s = fmemopen((void*)str, strlen(str), "r");
+    tehssl_make_stream(vm, "stringstream", s);
+    tehssl_gc(vm);
+
 
     printf("\n\n-----tests complete----\n\n");
 
