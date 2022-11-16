@@ -250,13 +250,11 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
     switch (object->type) {
         case DICT:
         case SCOPE:
-        // case LINE:
-        case BLOCK:
             tehssl_markobject(vm, object->key);
             // fallthrough
+        case BLOCK:
         case LIST:
         case LINE:
-        case CLOSURE:
             tehssl_markobject(vm, object->value);
             object = object->next;
             goto MARK;
@@ -266,6 +264,10 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
         case STRING:
         case STREAM:
             break; // noop
+        case CLOSURE:
+            tehssl_markobject(vm, object->key);
+            tehssl_markobject(vm, object->value);
+            break;
         case UNFUNCTION:
         case VARIABLE:
             tehssl_markobject(vm, object->value);
