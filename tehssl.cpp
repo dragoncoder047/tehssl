@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <cstdint>
 #include <cctype>
 
 // Config options
@@ -335,14 +336,15 @@ void tehssl_sweep(tehssl_vm_t vm) {
             #ifdef TEHSSL_DEBUG
             if (unreached->type == NUMBER) printf(" number-> %g", unreached->number);
             if (unreached->type == SINGLETON) printf(" singleton-> %i", unreached->singleton);
-            printf(", Next_object a "); debug_print_type((*object)->type);
+            if (*object == NULL) printf(", No next");
+            else { printf(", Next a "); debug_print_type((*object)->type); }
             printf(": Now have %lu objects\n", vm->num_objects - 1);
             #endif
             free(unreached);
             vm->num_objects--;
         } else {
             #ifdef TEHSSL_DEBUG
-            printf("Skipping marked object\n");
+            printf("Skipping marked "); debug_print_type((*object)->type); putchar('\n');
             #endif
             tehssl_clear_flag(*object, GC_MARK);
             object = &(*object)->next_object;

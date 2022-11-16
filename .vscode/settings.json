@@ -1,6 +1,10 @@
 {
     "cSpell.words": [
-        "TEHSSL"
+        "CMFUNCTION",
+        "CNFUNCTION",
+        "TEHSSL",
+        "TFUNCTION",
+        "UNFUNCTION"
     ],
     "C_Cpp.dimInactiveRegions": false
 }
