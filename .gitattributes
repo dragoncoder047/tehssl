@@ -1,1 +1,2 @@
 *.teh linguist-language=Forth
+test_reports/* linguist-generated
