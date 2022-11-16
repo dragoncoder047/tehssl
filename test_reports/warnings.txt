@@ -2,36 +2,32 @@ tehssl.cpp:116:9: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
   116 |         };
       |         ^
 tehssl.cpp: In function ‘void tehssl_init_builtins(tehssl_vm_t)’:
-tehssl.cpp:869:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
-  869 | void tehssl_init_builtins(tehssl_vm_t vm) {
+tehssl.cpp:877:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  877 | void tehssl_init_builtins(tehssl_vm_t vm) {
       |                           ~~~~~~~~~~~~^~
 tehssl.cpp: In function ‘void myfunction(tehssl_vm_t, tehssl_object_t)’:
-tehssl.cpp:874:29: warning: unused parameter ‘vm’ [-Wunused-parameter]
-  874 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
+tehssl.cpp:882:29: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  882 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
       |                 ~~~~~~~~~~~~^~
-tehssl.cpp:874:49: warning: unused parameter ‘scope’ [-Wunused-parameter]
-  874 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
+tehssl.cpp:882:49: warning: unused parameter ‘scope’ [-Wunused-parameter]
+  882 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
       |                                 ~~~~~~~~~~~~~~~~^~~~~
 tehssl.cpp: In function ‘int main(int, char**)’:
-tehssl.cpp:884:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  884 |         tehssl_make_string(vm, "i am cow hear me moo");
+tehssl.cpp:892:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  892 |         tehssl_make_string(vm, "i am cow hear me moo");
       |                                ^~~~~~~~~~~~~~~~~~~~~~
-tehssl.cpp:885:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  885 |         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
+tehssl.cpp:893:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  893 |         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
       |                                ^~~~~~~~~
-tehssl.cpp:888:60: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  888 |         tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
+tehssl.cpp:896:60: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  896 |         tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
       |                                                            ^~~~~~~~
-tehssl.cpp:928:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  928 |     tehssl_make_stream(vm, "stringstream", s);
+tehssl.cpp:936:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  936 |     tehssl_make_stream(vm, "stringstream", s);
       |                            ^~~~~~~~~~~~~~
-tehssl.cpp:875:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
-  875 | int main(int argc, char* argv[]) {
+tehssl.cpp:883:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
+  883 | int main(int argc, char* argv[]) {
       |          ~~~~^~~~
-tehssl.cpp:875:26: warning: unused parameter ‘argv’ [-Wunused-parameter]
-  875 | int main(int argc, char* argv[]) {
+tehssl.cpp:883:26: warning: unused parameter ‘argv’ [-Wunused-parameter]
+  883 | int main(int argc, char* argv[]) {
       |                    ~~~~~~^~~~~~
-tehssl.cpp: In function ‘void tehssl_error(tehssl_vm_t, const char*, char*)’:
-tehssl.cpp:492:13: warning: ignoring return value of ‘int asprintf(char**, const char*, ...)’, declared with attribute warn_unused_result [-Wunused-result]
-  492 |     asprintf(&buf, "%s: %s", message, detail);
-      |     ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,140 +1,200 @@
-==8253== Memcheck, a memory error detector
-==8253== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==8253== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==8253== Command: ./tehssl
-==8253== Parent PID: 8252
-==8253== 
-==8253== Invalid read of size 2
-==8253==    at 0x10A310: tehssl_test_flag (tehssl.cpp:197)
-==8253==    by 0x10A310: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:248)
-==8253==    by 0x10A359: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:273)
-==8253==    by 0x10A708: tehssl_markall (tehssl.cpp:294)
-==8253==    by 0x10A708: tehssl_gc(tehssl_vm*) (tehssl.cpp:361)
-==8253==    by 0x1099D4: main (tehssl.cpp:892)
-==8253==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
-==8253==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x10A557: tehssl_sweep(tehssl_vm*) (tehssl.cpp:344)
-==8253==    by 0x10A740: tehssl_gc(tehssl_vm*) (tehssl.cpp:362)
-==8253==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:382)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:389)
-==8253==    by 0x109DB7: main (tehssl.cpp:887)
-==8253==  Block was alloc'd at
-==8253==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
-==8253==    by 0x1097BC: tehssl_make_number (tehssl.cpp:431)
-==8253==    by 0x1097BC: main (tehssl.cpp:887)
-==8253== 
-==8253== Invalid read of size 4
-==8253==    at 0x10A31D: tehssl_set_flag (tehssl.cpp:195)
-==8253==    by 0x10A31D: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:249)
-==8253==    by 0x10A359: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:273)
-==8253==    by 0x10A708: tehssl_markall (tehssl.cpp:294)
-==8253==    by 0x10A708: tehssl_gc(tehssl_vm*) (tehssl.cpp:361)
-==8253==    by 0x1099D4: main (tehssl.cpp:892)
-==8253==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
-==8253==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x10A557: tehssl_sweep(tehssl_vm*) (tehssl.cpp:344)
-==8253==    by 0x10A740: tehssl_gc(tehssl_vm*) (tehssl.cpp:362)
-==8253==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:382)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:389)
-==8253==    by 0x109DB7: main (tehssl.cpp:887)
-==8253==  Block was alloc'd at
-==8253==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
-==8253==    by 0x1097BC: tehssl_make_number (tehssl.cpp:431)
-==8253==    by 0x1097BC: main (tehssl.cpp:887)
-==8253== 
-==8253== Invalid write of size 2
-==8253==    at 0x10A322: tehssl_set_flag (tehssl.cpp:195)
-==8253==    by 0x10A322: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:249)
-==8253==    by 0x10A359: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:273)
-==8253==    by 0x10A708: tehssl_markall (tehssl.cpp:294)
-==8253==    by 0x10A708: tehssl_gc(tehssl_vm*) (tehssl.cpp:361)
-==8253==    by 0x1099D4: main (tehssl.cpp:892)
-==8253==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
-==8253==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x10A557: tehssl_sweep(tehssl_vm*) (tehssl.cpp:344)
-==8253==    by 0x10A740: tehssl_gc(tehssl_vm*) (tehssl.cpp:362)
-==8253==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:382)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:389)
-==8253==    by 0x109DB7: main (tehssl.cpp:887)
-==8253==  Block was alloc'd at
-==8253==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
-==8253==    by 0x1097BC: tehssl_make_number (tehssl.cpp:431)
-==8253==    by 0x1097BC: main (tehssl.cpp:887)
-==8253== 
-==8253== Invalid read of size 4
-==8253==    at 0x10A32A: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:250)
-==8253==    by 0x10A359: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:273)
-==8253==    by 0x10A708: tehssl_markall (tehssl.cpp:294)
-==8253==    by 0x10A708: tehssl_gc(tehssl_vm*) (tehssl.cpp:361)
-==8253==    by 0x1099D4: main (tehssl.cpp:892)
-==8253==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
-==8253==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x10A557: tehssl_sweep(tehssl_vm*) (tehssl.cpp:344)
-==8253==    by 0x10A740: tehssl_gc(tehssl_vm*) (tehssl.cpp:362)
-==8253==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:382)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:389)
-==8253==    by 0x109DB7: main (tehssl.cpp:887)
-==8253==  Block was alloc'd at
-==8253==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
-==8253==    by 0x1097BC: tehssl_make_number (tehssl.cpp:431)
-==8253==    by 0x1097BC: main (tehssl.cpp:887)
-==8253== 
-==8253== Invalid read of size 2
-==8253==    at 0x10A310: tehssl_test_flag (tehssl.cpp:197)
-==8253==    by 0x10A310: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:248)
-==8253==    by 0x10A359: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:273)
-==8253==    by 0x10A708: tehssl_markall (tehssl.cpp:294)
-==8253==    by 0x10A708: tehssl_gc(tehssl_vm*) (tehssl.cpp:361)
-==8253==    by 0x109EB7: main (tehssl.cpp:924)
-==8253==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
-==8253==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x10A557: tehssl_sweep(tehssl_vm*) (tehssl.cpp:344)
-==8253==    by 0x10A740: tehssl_gc(tehssl_vm*) (tehssl.cpp:362)
-==8253==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:382)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:389)
-==8253==    by 0x109DB7: main (tehssl.cpp:887)
-==8253==  Block was alloc'd at
-==8253==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
-==8253==    by 0x1097BC: tehssl_make_number (tehssl.cpp:431)
-==8253==    by 0x1097BC: main (tehssl.cpp:887)
-==8253== 
-==8253== Invalid read of size 2
-==8253==    at 0x10A310: tehssl_test_flag (tehssl.cpp:197)
-==8253==    by 0x10A310: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:248)
-==8253==    by 0x10A359: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:273)
-==8253==    by 0x10A708: tehssl_markall (tehssl.cpp:294)
-==8253==    by 0x10A708: tehssl_gc(tehssl_vm*) (tehssl.cpp:361)
-==8253==    by 0x109EF5: main (tehssl.cpp:929)
-==8253==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
-==8253==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x10A557: tehssl_sweep(tehssl_vm*) (tehssl.cpp:344)
-==8253==    by 0x10A740: tehssl_gc(tehssl_vm*) (tehssl.cpp:362)
-==8253==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:382)
-==8253==    by 0x109DB7: tehssl_push (tehssl.cpp:389)
-==8253==    by 0x109DB7: main (tehssl.cpp:887)
-==8253==  Block was alloc'd at
-==8253==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==8253==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
-==8253==    by 0x1097BC: tehssl_make_number (tehssl.cpp:431)
-==8253==    by 0x1097BC: main (tehssl.cpp:887)
-==8253== 
-==8253== 
-==8253== HEAP SUMMARY:
-==8253==     in use at exit: 0 bytes in 0 blocks
-==8253==   total heap usage: 266 allocs, 266 frees, 34,452 bytes allocated
-==8253== 
-==8253== All heap blocks were freed -- no leaks are possible
-==8253== 
-==8253== For lists of detected and suppressed errors, rerun with: -s
-==8253== ERROR SUMMARY: 7 errors from 6 contexts (suppressed: 0 from 0)
+==8709== Memcheck, a memory error detector
+==8709== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==8709== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==8709== Command: ./tehssl
+==8709== Parent PID: 8708
+==8709== 
+==8709== Invalid read of size 4
+==8709==    at 0x10A323: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:254)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x1099D4: main (tehssl.cpp:900)
+==8709==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 2
+==8709==    at 0x10A33D: tehssl_test_flag (tehssl.cpp:197)
+==8709==    by 0x10A33D: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:256)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x1099D4: main (tehssl.cpp:900)
+==8709==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 4
+==8709==    at 0x10A34A: tehssl_set_flag (tehssl.cpp:195)
+==8709==    by 0x10A34A: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:257)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x1099D4: main (tehssl.cpp:900)
+==8709==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid write of size 2
+==8709==    at 0x10A34F: tehssl_set_flag (tehssl.cpp:195)
+==8709==    by 0x10A34F: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:257)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x1099D4: main (tehssl.cpp:900)
+==8709==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 4
+==8709==    at 0x10A357: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:258)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x1099D4: main (tehssl.cpp:900)
+==8709==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 4
+==8709==    at 0x10A323: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:254)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x109EB7: main (tehssl.cpp:932)
+==8709==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 2
+==8709==    at 0x10A33D: tehssl_test_flag (tehssl.cpp:197)
+==8709==    by 0x10A33D: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:256)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x109EB7: main (tehssl.cpp:932)
+==8709==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 4
+==8709==    at 0x10A323: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:254)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x109EF5: main (tehssl.cpp:937)
+==8709==  Address 0x4a4d890 is 0 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== Invalid read of size 2
+==8709==    at 0x10A33D: tehssl_test_flag (tehssl.cpp:197)
+==8709==    by 0x10A33D: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:256)
+==8709==    by 0x10A381: tehssl_markobject(tehssl_vm*, tehssl_object*) (tehssl.cpp:281)
+==8709==    by 0x10A748: tehssl_markall (tehssl.cpp:302)
+==8709==    by 0x10A748: tehssl_gc(tehssl_vm*) (tehssl.cpp:369)
+==8709==    by 0x109EF5: main (tehssl.cpp:937)
+==8709==  Address 0x4a4d894 is 4 bytes inside a block of size 40 free'd
+==8709==    at 0x483CA3F: free (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x10A597: tehssl_sweep(tehssl_vm*) (tehssl.cpp:352)
+==8709==    by 0x10A780: tehssl_gc(tehssl_vm*) (tehssl.cpp:370)
+==8709==    by 0x109DB7: tehssl_alloc (tehssl.cpp:215)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:390)
+==8709==    by 0x109DB7: tehssl_push (tehssl.cpp:397)
+==8709==    by 0x109DB7: main (tehssl.cpp:895)
+==8709==  Block was alloc'd at
+==8709==    at 0x483DD99: calloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==8709==    by 0x1097BC: tehssl_alloc (tehssl.cpp:216)
+==8709==    by 0x1097BC: tehssl_make_number (tehssl.cpp:439)
+==8709==    by 0x1097BC: main (tehssl.cpp:895)
+==8709== 
+==8709== 
+==8709== HEAP SUMMARY:
+==8709==     in use at exit: 0 bytes in 0 blocks
+==8709==   total heap usage: 266 allocs, 266 frees, 34,452 bytes allocated
+==8709== 
+==8709== All heap blocks were freed -- no leaks are possible
+==8709== 
+==8709== For lists of detected and suppressed errors, rerun with: -s
+==8709== ERROR SUMMARY: 10 errors from 9 contexts (suppressed: 0 from 0)

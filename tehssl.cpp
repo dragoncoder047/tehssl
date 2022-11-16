@@ -244,7 +244,15 @@ tehssl_object_t tehssl_get_type_handle(tehssl_vm_t vm, char* type) {
 void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
     MARK:
     // already marked? abort
-    if (object == NULL) return;
+    if (object == NULL) {
+        #ifdef TEHSSL_DEBUG
+        printf("Marking NULL\n");
+        #endif
+        return;
+    }
+    #ifdef TEHSSL_DEBUG
+    printf("Marking a "); debug_print_type(object->type); putchar('\n');
+    #endif
     if (tehssl_test_flag(object, GC_MARK)) return;
     tehssl_set_flag(object, GC_MARK);
     switch (object->type) {
