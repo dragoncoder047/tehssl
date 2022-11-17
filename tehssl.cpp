@@ -160,6 +160,7 @@ void debug_print_type(tehssl_typeid_t t) {
 #endif
 
 inline bool tehssl_has_name(tehssl_object_t object) {
+    if (object == NULL) return false;
     switch (object->type) {
         case SYMBOL:
         case STRING:
@@ -531,19 +532,10 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
     if (a->type != b->type) return false; // Different type
     switch (a->type) {
         case DICT:
-        case SCOPE:
-        case UNFUNCTION:
-        case VARIABLE:
-        // case LINE:
-        case BLOCK:
             if (!tehssl_equal(vm, a->key, b->key)) return false;
             // fallthrough
         case LIST:
         case LINE:
-        case CLOSURE:
-        case CNFUNCTION:
-        case CMFUNCTION:
-        case TFUNCTION:
             if (!tehssl_equal(vm, a->value, b->value)) return false;
             a = a->next;
             b = b->next;
@@ -566,8 +558,9 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
                 return true;
             }
             return type_handle->type_function(vm, CTYPE_COMPARE, a, (void*)b) == 0;
+        default:
+            return false;
     }
-    return false; // unreachable, just to satisfy compiler
 }
 
 int tehssl_list_length(tehssl_object_t list) {
