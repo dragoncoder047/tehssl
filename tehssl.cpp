@@ -715,8 +715,8 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
         #ifdef TEHSSL_DEBUG
         printf("Top of Outer loop\n");
         #endif
-        tehssl_object_t c_line = NULL;
-        tehssl_object_t* line_tail = &c_line;
+        tehssl_push(vm, &vm->gc_stack, NULL);
+        tehssl_object_t* line_tail = &vm->gc_stack->value;
         char* token = NULL;
         // Inner loop: items on the line
         while (!feof(stream)) {
@@ -817,7 +817,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
             printf("Bottom of outer loop\n");
             #endif
             *block_tail = tehssl_alloc(vm, BLOCK);
-            (*block_tail)->value = c_line;
+            (*block_tail)->value = tehssl_pop(&vm->gc_stack);
             block_tail = &(*block_tail)->next;
         }
     }
@@ -926,9 +926,10 @@ int main(int argc, char* argv[]) {
     s = fmemopen((void*)str, strlen(str), "r");
     tehssl_object_t c = tehssl_compile_until(vm, s, EOF);
     printf("Returned %d: ", vm->status);
-    debug_print_type(c->type);
+    if (c == NULL) printf("Compile returned NULL!!");
+    else debug_print_type(c->type);
     fclose(s);
-    printf("collecting garbage\n");
+    printf("\ncollecting garbage\n");
     tehssl_gc(vm);
 
     printf("\n\n-----test 4: freeing a fmemopen()'ed stream----\n\n");

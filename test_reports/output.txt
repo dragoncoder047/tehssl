@@ -993,96 +993,102 @@ Print
 making stringstream...
 Allocating a LIST: Now have 153 objects
 Top of Outer loop
+Allocating a LIST: Now have 154 objects
 Top of Inner loop
 Normal symbol: For
-Allocating a SYMBOL: Now have 154 objects
-Allocating a LINE: Now have 155 objects
+Allocating a SYMBOL: Now have 155 objects
+Allocating a LINE: Now have 156 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 156 objects
+Allocating a BLOCK: Now have 157 objects
 Top of Inner loop
 Normal symbol: Range
-Allocating a SYMBOL: Now have 157 objects
-Allocating a LINE: Now have 158 objects
+Allocating a SYMBOL: Now have 158 objects
+Allocating a LINE: Now have 159 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 159 objects
+Allocating a BLOCK: Now have 160 objects
 Top of Inner loop
 Number: 1.000000
-Allocating a NUMBER: Now have 160 objects
-Allocating a LINE: Now have 161 objects
+Allocating a NUMBER: Now have 161 objects
+Allocating a LINE: Now have 162 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 162 objects
+Allocating a BLOCK: Now have 163 objects
 Top of Inner loop
 Number: 10.000000
-Allocating a NUMBER: Now have 163 objects
-Allocating a LINE: Now have 164 objects
+Allocating a NUMBER: Now have 164 objects
+Allocating a LINE: Now have 165 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 165 objects
+Allocating a BLOCK: Now have 166 objects
 Top of Inner loop
 Normal symbol: -step
-Allocating a SYMBOL: Now have 166 objects
-Allocating a LINE: Now have 167 objects
+Allocating a SYMBOL: Now have 167 objects
+Allocating a LINE: Now have 168 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 168 objects
+Allocating a BLOCK: Now have 169 objects
 Top of Inner loop
 Number: 3.000000
-Allocating a NUMBER: Now have 169 objects
-Allocating a LINE: Now have 170 objects
+Allocating a NUMBER: Now have 170 objects
+Allocating a LINE: Now have 171 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 171 objects
+Allocating a BLOCK: Now have 172 objects
 Top of Inner loop
 Bracket
-Allocating a LIST: Now have 172 objects
+Allocating a LIST: Now have 173 objects
 Top of Outer loop
+Allocating a LIST: Now have 174 objects
 Top of Inner loop
 Normal symbol: Square
-Allocating a SYMBOL: Now have 173 objects
-Allocating a LINE: Now have 174 objects
+Allocating a SYMBOL: Now have 175 objects
+Allocating a LINE: Now have 176 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 175 objects
+Allocating a BLOCK: Now have 177 objects
 Top of Inner loop
 Semicolon
 Top of Outer loop
+Allocating a LIST: Now have 178 objects
 Top of Inner loop
 Normal symbol: Print
-Allocating a SYMBOL: Now have 176 objects
-Allocating a LINE: Now have 177 objects
-Bottom of outer loop
-Allocating a BLOCK: Now have 178 objects
-Top of Inner loop
-Normal symbol: Fibbonaci
 Allocating a SYMBOL: Now have 179 objects
 Allocating a LINE: Now have 180 objects
 Bottom of outer loop
 Allocating a BLOCK: Now have 181 objects
 Top of Inner loop
-Semicolon
-Top of Outer loop
-Top of Inner loop
-Hit Stop, returning
-Bottom of outer loop
-Allocating a BLOCK: Now have 182 objects
-Top of Inner loop
-Semicolon
-Top of Outer loop
-Top of Inner loop
-Normal symbol: Print
+Normal symbol: Fibbonaci
+Allocating a SYMBOL: Now have 182 objects
 Allocating a LINE: Now have 183 objects
 Bottom of outer loop
 Allocating a BLOCK: Now have 184 objects
 Top of Inner loop
-String: DONE!!
-Allocating a STRING: Now have 185 objects
-Allocating a LINE: Now have 186 objects
+Semicolon
+Top of Outer loop
+Allocating a LIST: Now have 185 objects
+Top of Inner loop
+Hit Stop, returning
 Bottom of outer loop
-Allocating a BLOCK: Now have 187 objects
+Allocating a BLOCK: Now have 186 objects
+Top of Inner loop
+Semicolon
+Top of Outer loop
+Allocating a LIST: Now have 187 objects
+Top of Inner loop
+Normal symbol: Print
+Allocating a LINE: Now have 188 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 189 objects
+Top of Inner loop
+String: DONE!!
+Allocating a STRING: Now have 190 objects
+Allocating a LINE: Now have 191 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 192 objects
 Top of Inner loop
 Number: 123.000000
-Allocating a NUMBER: Now have 188 objects
-Allocating a LINE: Now have 189 objects
+Allocating a NUMBER: Now have 193 objects
+Allocating a LINE: Now have 194 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 190 objects
+Allocating a BLOCK: Now have 195 objects
 feof() false, returning
-Returned 0: BLOCKcollecting garbage
+Returned 0: Compile returned NULL!!
+collecting garbage
 Entering GC
 Marking a LIST
 Marking a STRING
@@ -1293,43 +1299,48 @@ Marking NULL
 Marking NULL
 Marking NULL
 Marking NULL
-Freeing a BLOCK, Next a LINE: Now have 189 objects
-Freeing a LINE, Next a NUMBER: Now have 188 objects
-Freeing a NUMBER number-> 123, Next a BLOCK: Now have 187 objects
-Freeing a BLOCK, Next a LINE: Now have 186 objects
-Freeing a LINE, Next a STRING: Now have 185 objects
-Freeing a STRING name-> "DONE!!", Next a BLOCK: Now have 184 objects
+Freeing a BLOCK, Next a LINE: Now have 194 objects
+Freeing a LINE, Next a NUMBER: Now have 193 objects
+Freeing a NUMBER number-> 123, Next a BLOCK: Now have 192 objects
+Freeing a BLOCK, Next a LINE: Now have 191 objects
+Freeing a LINE, Next a STRING: Now have 190 objects
+Freeing a STRING name-> "DONE!!", Next a BLOCK: Now have 189 objects
+Freeing a BLOCK, Next a LINE: Now have 188 objects
+Freeing a LINE, Next a LIST: Now have 187 objects
+Freeing a LIST, Next a BLOCK: Now have 186 objects
+Freeing a BLOCK, Next a LIST: Now have 185 objects
+Freeing a LIST, Next a BLOCK: Now have 184 objects
 Freeing a BLOCK, Next a LINE: Now have 183 objects
-Freeing a LINE, Next a BLOCK: Now have 182 objects
-Freeing a BLOCK, Next a BLOCK: Now have 181 objects
+Freeing a LINE, Next a SYMBOL: Now have 182 objects
+Freeing a SYMBOL name-> "Fibbonaci", Next a BLOCK: Now have 181 objects
 Freeing a BLOCK, Next a LINE: Now have 180 objects
 Freeing a LINE, Next a SYMBOL: Now have 179 objects
-Freeing a SYMBOL name-> "Fibbonaci", Next a BLOCK: Now have 178 objects
-Freeing a BLOCK, Next a LINE: Now have 177 objects
-Freeing a LINE, Next a SYMBOL: Now have 176 objects
-Freeing a SYMBOL name-> "Print", Next a BLOCK: Now have 175 objects
-Freeing a BLOCK, Next a LINE: Now have 174 objects
-Freeing a LINE, Next a SYMBOL: Now have 173 objects
-Freeing a SYMBOL name-> "Square", Next a LIST: Now have 172 objects
-Freeing a LIST, Next a BLOCK: Now have 171 objects
-Freeing a BLOCK, Next a LINE: Now have 170 objects
-Freeing a LINE, Next a NUMBER: Now have 169 objects
-Freeing a NUMBER number-> 3, Next a BLOCK: Now have 168 objects
-Freeing a BLOCK, Next a LINE: Now have 167 objects
-Freeing a LINE, Next a SYMBOL: Now have 166 objects
-Freeing a SYMBOL name-> "-step", Next a BLOCK: Now have 165 objects
-Freeing a BLOCK, Next a LINE: Now have 164 objects
-Freeing a LINE, Next a NUMBER: Now have 163 objects
-Freeing a NUMBER number-> 10, Next a BLOCK: Now have 162 objects
-Freeing a BLOCK, Next a LINE: Now have 161 objects
-Freeing a LINE, Next a NUMBER: Now have 160 objects
-Freeing a NUMBER number-> 1, Next a BLOCK: Now have 159 objects
-Freeing a BLOCK, Next a LINE: Now have 158 objects
-Freeing a LINE, Next a SYMBOL: Now have 157 objects
-Freeing a SYMBOL name-> "Range", Next a BLOCK: Now have 156 objects
-Freeing a BLOCK, Next a LINE: Now have 155 objects
-Freeing a LINE, Next a SYMBOL: Now have 154 objects
-Freeing a SYMBOL name-> "For", Next a LIST: Now have 153 objects
+Freeing a SYMBOL name-> "Print", Next a LIST: Now have 178 objects
+Freeing a LIST, Next a BLOCK: Now have 177 objects
+Freeing a BLOCK, Next a LINE: Now have 176 objects
+Freeing a LINE, Next a SYMBOL: Now have 175 objects
+Freeing a SYMBOL name-> "Square", Next a LIST: Now have 174 objects
+Freeing a LIST, Next a LIST: Now have 173 objects
+Freeing a LIST, Next a BLOCK: Now have 172 objects
+Freeing a BLOCK, Next a LINE: Now have 171 objects
+Freeing a LINE, Next a NUMBER: Now have 170 objects
+Freeing a NUMBER number-> 3, Next a BLOCK: Now have 169 objects
+Freeing a BLOCK, Next a LINE: Now have 168 objects
+Freeing a LINE, Next a SYMBOL: Now have 167 objects
+Freeing a SYMBOL name-> "-step", Next a BLOCK: Now have 166 objects
+Freeing a BLOCK, Next a LINE: Now have 165 objects
+Freeing a LINE, Next a NUMBER: Now have 164 objects
+Freeing a NUMBER number-> 10, Next a BLOCK: Now have 163 objects
+Freeing a BLOCK, Next a LINE: Now have 162 objects
+Freeing a LINE, Next a NUMBER: Now have 161 objects
+Freeing a NUMBER number-> 1, Next a BLOCK: Now have 160 objects
+Freeing a BLOCK, Next a LINE: Now have 159 objects
+Freeing a LINE, Next a SYMBOL: Now have 158 objects
+Freeing a SYMBOL name-> "Range", Next a BLOCK: Now have 157 objects
+Freeing a BLOCK, Next a LINE: Now have 156 objects
+Freeing a LINE, Next a SYMBOL: Now have 155 objects
+Freeing a SYMBOL name-> "For", Next a LIST: Now have 154 objects
+Freeing a LIST, Next a LIST: Now have 153 objects
 Freeing a LIST, Next a CNFUNCTION: Now have 152 objects
 Skipping marked CNFUNCTION
 Skipping marked SCOPE
@@ -1483,7 +1494,7 @@ Skipping marked LIST
 Skipping marked STRING
 Skipping marked LIST
 Skipping marked NUMBER
-GC done, freed 38 objects
+GC done, freed 43 objects
 
 
 -----test 4: freeing a fmemopen()'ed stream----

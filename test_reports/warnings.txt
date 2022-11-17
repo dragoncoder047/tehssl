@@ -22,8 +22,8 @@ tehssl.cpp:893:32: warning: ISO C++ forbids converting a string constant to ‘c
 tehssl.cpp:896:60: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
   896 |         tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
       |                                                            ^~~~~~~~
-tehssl.cpp:936:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  936 |     tehssl_make_stream(vm, "stringstream", s);
+tehssl.cpp:937:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  937 |     tehssl_make_stream(vm, "stringstream", s);
       |                            ^~~~~~~~~~~~~~
 tehssl.cpp:883:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
   883 | int main(int argc, char* argv[]) {
