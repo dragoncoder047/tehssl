@@ -129,6 +129,7 @@ struct tehssl_vm {
     size_t num_objects;
     size_t next_gc;
     char last_char;
+    bool enable_gc;
 };
 
 // Forward references
@@ -209,11 +210,12 @@ tehssl_vm_t tehssl_new_vm() {
     vm->status = OK;
     vm->num_objects = 0;
     vm->next_gc = TEHSSL_MIN_HEAP_SIZE;
+    vm->enable_gc = true;
     return vm;
 }
 
 tehssl_object_t tehssl_alloc(tehssl_vm_t vm, tehssl_typeid_t type) {
-    if (vm->num_objects == vm->next_gc) tehssl_gc(vm);
+    if (vm->num_objects >= vm->next_gc && vm->enable_gc) tehssl_gc(vm);
     tehssl_object_t object = (tehssl_object_t)malloc(sizeof(struct tehssl_object));
     if (!object) {
         vm->status = OUT_OF_MEMORY;
@@ -254,7 +256,12 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
     #ifdef TEHSSL_DEBUG
     printf("Marking a "); debug_print_type(object->type); putchar('\n');
     #endif
-    if (tehssl_test_flag(object, GC_MARK)) return;
+    if (tehssl_test_flag(object, GC_MARK)) {
+        #ifdef TEHSSL_DEBUG
+        printf("Already marked, returning\n");
+        #endif
+        return;
+    }
     tehssl_set_flag(object, GC_MARK);
     switch (object->type) {
         case DICT:
@@ -303,7 +310,13 @@ void tehssl_markall(tehssl_vm_t vm) {
     tehssl_markobject(vm, vm->stack);
     tehssl_markobject(vm, vm->return_value);
     tehssl_markobject(vm, vm->global_scope);
+    #ifdef TEHSSL_DEBUG
+    printf("Marking GC_STACK\n");
+    #endif
     tehssl_markobject(vm, vm->gc_stack);
+    #ifdef TEHSSL_DEBUG
+    printf("Done marking GC_STACK\n");
+    #endif
     tehssl_markobject(vm, vm->type_functions);
 }
 
@@ -363,6 +376,12 @@ void tehssl_sweep(tehssl_vm_t vm) {
 }
 
 size_t tehssl_gc(tehssl_vm_t vm) {
+    if (!vm->enable_gc) {
+        #ifdef TEHSSL_DEBUG
+        printf("GC disabled, aborting GC\n");
+        #endif
+        return 0;
+    }
     #ifdef TEHSSL_DEBUG
     printf("Entering GC\n");
     #endif
@@ -382,28 +401,15 @@ void tehssl_destroy(tehssl_vm_t vm) {
     vm->return_value = NULL;
     vm->global_scope = NULL;
     vm->gc_stack = NULL;
+    vm->type_functions = NULL;
+    vm->enable_gc = true;
     tehssl_gc(vm);
     free(vm);
 }
 
 // Push / Pop (for stacks)
-inline void tehssl_push(tehssl_vm_t vm, tehssl_object_t* stack, tehssl_object_t item, tehssl_typeid_t t) {
-    tehssl_object_t cell = tehssl_alloc(vm, t);
-    cell->value = item;
-    cell->next = *stack;
-    *stack = cell;
-}
-
-inline void tehssl_push(tehssl_vm_t vm, tehssl_object_t* stack, tehssl_object_t item) {
-    tehssl_push(vm, stack, item, LIST);
-}
-
-inline tehssl_object_t tehssl_pop(tehssl_object_t* stack) {
-    if (*stack == NULL) return NULL;
-    tehssl_object_t item = (*stack)->value;
-    *stack = (*stack)->next;
-    return item;
-}
+#define tehssl_push(vm, stack, item) do { tehssl_object_t cell = tehssl_alloc((vm), LIST); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
+#define tehssl_pop(stack) do { if ((stack) != NULL) (stack) = (stack)->next; } while (false)
 
 // Make objects
 tehssl_object_t tehssl_make_string(tehssl_vm_t vm, char* string) {
@@ -548,7 +554,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
         case STRING:
         case STREAM:
             return tehssl_compare_strings(a->name, b->name, false, true, false);
-        case USERTYPE:
+        case USERTYPE: {
             if (strcmp(a->name, b->name) != 0) return false;
             tehssl_object_t type_handle = tehssl_get_type_handle(vm, a->name);
             if (type_handle == NULL) {
@@ -558,6 +564,7 @@ bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
                 return true;
             }
             return type_handle->type_function(vm, CTYPE_COMPARE, a, (void*)b) == 0;
+        }
         default:
             return false;
     }
@@ -701,15 +708,18 @@ char* tehssl_next_token(FILE* file) {
 
 // Compiler
 tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
-    tehssl_push(vm, &vm->gc_stack, NULL);
-    tehssl_object_t* block_tail = &vm->gc_stack->value;
+    tehssl_gc(vm);
+    bool oldenable = vm->enable_gc;
+    vm->enable_gc = false;
+    tehssl_object_t c_block = tehssl_alloc(vm, BLOCK);
+    tehssl_object_t* block_tail = &c_block;
     // Outer loop: Lines
     while (!feof(stream)) {
         #ifdef TEHSSL_DEBUG
         printf("Top of Outer loop\n");
         #endif
-        tehssl_push(vm, &vm->gc_stack, NULL);
-        tehssl_object_t* line_tail = &vm->gc_stack->value;
+        tehssl_object_t c_line = tehssl_alloc(vm, LINE);
+        tehssl_object_t* line_tail = &c_line;
         char* token = NULL;
         // Inner loop: items on the line
         while (!feof(stream)) {
@@ -722,7 +732,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                 printf("Unexpected EOF\n");
                 #endif
                 tehssl_error(vm, "unexpected EOF");
-                tehssl_pop(&vm->gc_stack);
+                vm->enable_gc = oldenable;
                 return NULL;
             }
             if ((strlen(token) == 0 && stop == EOF) || token[0] == stop) {
@@ -730,7 +740,8 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                 printf("Hit Stop, returning\n");
                 #endif
                 free(token);
-                return tehssl_pop(&vm->gc_stack);
+                vm->enable_gc = oldenable;
+                return c_block;
             }
             tehssl_object_t item = NULL;
             if (token[0] == ';') {
@@ -752,7 +763,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                 double num;
                 if (sscanf(token, "%lf", &num) == 1) {
                     #ifdef TEHSSL_DEBUG
-                    printf("Number: %lf\n", num);
+                    printf("Number: %g\n", num);
                     #endif
                     item = tehssl_make_number(vm, num);
                 } else if (strcmp(token, "NaN") == 0) {
@@ -810,14 +821,15 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
             printf("Bottom of outer loop\n");
             #endif
             *block_tail = tehssl_alloc(vm, BLOCK);
-            (*block_tail)->value = tehssl_pop(&vm->gc_stack);
+            (*block_tail)->value = c_line;
             block_tail = &(*block_tail)->next;
         }
     }
     #ifdef TEHSSL_DEBUG
     printf("feof() false, returning\n");
     #endif
-    return tehssl_pop(&vm->gc_stack);
+    vm->enable_gc = oldenable;
+    return c_block;
 }
 
 // Evaluator
@@ -879,14 +891,14 @@ int main(int argc, char* argv[]) {
 
     printf("\n\n-----test 1: garbage collector----\n\n");
     // Make some garbage
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 5; i++) {
         tehssl_make_number(vm, 123);
         tehssl_make_number(vm, 456.789123);
         tehssl_make_string(vm, "i am cow hear me moo");
         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
         // This is not garbage, it is on the stack now
-        tehssl_push(vm, &vm->stack, tehssl_make_number(vm, 1.7E+123));
-        tehssl_push(vm, &vm->stack, tehssl_make_string(vm, "Foo123"));
+        tehssl_push(vm, vm->stack, tehssl_make_number(vm, 1.7E+123));
+        tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
     }
     tehssl_register_word(vm, "MyFunction", myfunction);
     printf("%lu objects\n", vm->num_objects);

@@ -6,275 +6,25 @@ Allocating a NUMBER: Now have 1 objects
 Allocating a NUMBER: Now have 2 objects
 Allocating a STRING: Now have 3 objects
 Allocating a SYMBOL: Now have 4 objects
-Allocating a NUMBER: Now have 5 objects
-Allocating a LIST: Now have 6 objects
-Allocating a STRING: Now have 7 objects
-Allocating a LIST: Now have 8 objects
-Allocating a NUMBER: Now have 9 objects
-Allocating a LIST: Now have 10 objects
+Allocating a LIST: Now have 5 objects
+Allocating a NUMBER: Now have 6 objects
+Allocating a LIST: Now have 7 objects
+Allocating a STRING: Now have 8 objects
+Allocating a LIST: Now have 9 objects
+Allocating a NUMBER: Now have 10 objects
 Allocating a LIST: Now have 11 objects
-Allocating a NUMBER: Now have 12 objects
-Allocating a LIST: Now have 13 objects
+Allocating a LIST: Now have 12 objects
+Allocating a NUMBER: Now have 13 objects
 Allocating a LIST: Now have 14 objects
-Allocating a NUMBER: Now have 15 objects
-Allocating a LIST: Now have 16 objects
+Allocating a LIST: Now have 15 objects
+Allocating a NUMBER: Now have 16 objects
 Allocating a LIST: Now have 17 objects
-Allocating a NUMBER: Now have 18 objects
-Allocating a LIST: Now have 19 objects
+Allocating a LIST: Now have 18 objects
+Allocating a NUMBER: Now have 19 objects
 Allocating a LIST: Now have 20 objects
-Allocating a NUMBER: Now have 21 objects
-Allocating a LIST: Now have 22 objects
-Allocating a LIST: Now have 23 objects
-Allocating a NUMBER: Now have 24 objects
-Allocating a LIST: Now have 25 objects
-Allocating a LIST: Now have 26 objects
-Allocating a NUMBER: Now have 27 objects
-Allocating a LIST: Now have 28 objects
-Allocating a LIST: Now have 29 objects
-Allocating a NUMBER: Now have 30 objects
-Allocating a LIST: Now have 31 objects
-Allocating a LIST: Now have 32 objects
-Allocating a NUMBER: Now have 33 objects
-Allocating a LIST: Now have 34 objects
-Allocating a LIST: Now have 35 objects
-Allocating a NUMBER: Now have 36 objects
-Allocating a LIST: Now have 37 objects
-Allocating a LIST: Now have 38 objects
-Allocating a NUMBER: Now have 39 objects
-Allocating a LIST: Now have 40 objects
-Allocating a LIST: Now have 41 objects
-Allocating a NUMBER: Now have 42 objects
-Allocating a LIST: Now have 43 objects
-Allocating a LIST: Now have 44 objects
-Allocating a NUMBER: Now have 45 objects
-Allocating a LIST: Now have 46 objects
-Allocating a LIST: Now have 47 objects
-Allocating a NUMBER: Now have 48 objects
-Allocating a LIST: Now have 49 objects
-Allocating a LIST: Now have 50 objects
-Allocating a NUMBER: Now have 51 objects
-Allocating a LIST: Now have 52 objects
-Allocating a LIST: Now have 53 objects
-Allocating a NUMBER: Now have 54 objects
-Allocating a LIST: Now have 55 objects
-Allocating a LIST: Now have 56 objects
-Allocating a NUMBER: Now have 57 objects
-Allocating a LIST: Now have 58 objects
-Allocating a LIST: Now have 59 objects
-Allocating a NUMBER: Now have 60 objects
-Allocating a LIST: Now have 61 objects
-Allocating a LIST: Now have 62 objects
-Allocating a NUMBER: Now have 63 objects
-Allocating a LIST: Now have 64 objects
-Entering GC
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking NULL
-Marking NULL
-Marking NULL
-Marking NULL
-Marking NULL
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked STRING
-Skipping marked LIST
-Skipping marked NUMBER
-Freeing a SYMBOL name-> "Symbol!", Next a STRING: Now have 63 objects
-Freeing a STRING name-> "i am cow hear me moo", Next a NUMBER: Now have 62 objects
-Freeing a NUMBER number-> 456.789, Next a NUMBER: Now have 61 objects
-Freeing a NUMBER number-> 123, No next: Now have 60 objects
-GC done, freed 4 objects
-Allocating a LIST: Now have 61 objects
-Allocating a NUMBER: Now have 62 objects
-Allocating a NUMBER: Now have 63 objects
-Allocating a STRING: Now have 64 objects
-Allocating a SYMBOL: Now have 65 objects
-Allocating a NUMBER: Now have 66 objects
-Allocating a LIST: Now have 67 objects
-Allocating a LIST: Now have 68 objects
-Allocating a NUMBER: Now have 69 objects
-Allocating a LIST: Now have 70 objects
-Allocating a LIST: Now have 71 objects
-Allocating a NUMBER: Now have 72 objects
-Allocating a LIST: Now have 73 objects
-Allocating a LIST: Now have 74 objects
-Allocating a NUMBER: Now have 75 objects
-Allocating a LIST: Now have 76 objects
-Allocating a LIST: Now have 77 objects
-Allocating a NUMBER: Now have 78 objects
-Allocating a LIST: Now have 79 objects
-Allocating a LIST: Now have 80 objects
-Allocating a NUMBER: Now have 81 objects
-Allocating a LIST: Now have 82 objects
-Allocating a LIST: Now have 83 objects
-Allocating a NUMBER: Now have 84 objects
-Allocating a LIST: Now have 85 objects
-Allocating a LIST: Now have 86 objects
-Allocating a NUMBER: Now have 87 objects
-Allocating a LIST: Now have 88 objects
-Allocating a LIST: Now have 89 objects
-Allocating a NUMBER: Now have 90 objects
-Allocating a LIST: Now have 91 objects
-Allocating a LIST: Now have 92 objects
-Allocating a NUMBER: Now have 93 objects
-Allocating a LIST: Now have 94 objects
-Allocating a LIST: Now have 95 objects
-Allocating a NUMBER: Now have 96 objects
-Allocating a LIST: Now have 97 objects
-Allocating a LIST: Now have 98 objects
-Allocating a NUMBER: Now have 99 objects
-Allocating a LIST: Now have 100 objects
-Allocating a LIST: Now have 101 objects
-Allocating a NUMBER: Now have 102 objects
-Allocating a LIST: Now have 103 objects
-Allocating a LIST: Now have 104 objects
-Allocating a NUMBER: Now have 105 objects
-Allocating a LIST: Now have 106 objects
-Allocating a LIST: Now have 107 objects
-Allocating a NUMBER: Now have 108 objects
-Allocating a LIST: Now have 109 objects
-Allocating a LIST: Now have 110 objects
-Allocating a NUMBER: Now have 111 objects
-Allocating a LIST: Now have 112 objects
-Allocating a LIST: Now have 113 objects
-Allocating a NUMBER: Now have 114 objects
-Allocating a LIST: Now have 115 objects
-Allocating a LIST: Now have 116 objects
-Allocating a NUMBER: Now have 117 objects
-Allocating a LIST: Now have 118 objects
-Allocating a LIST: Now have 119 objects
-Allocating a NUMBER: Now have 120 objects
+Allocating a SCOPE: Now have 21 objects
+Allocating a CNFUNCTION: Now have 22 objects
+22 objects
 Entering GC
 Marking a LIST
 Marking a STRING
@@ -282,519 +32,22 @@ Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking NULL
-Marking NULL
-Marking NULL
-Marking NULL
-Marking NULL
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 119 objects
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Freeing a SYMBOL name-> "Symbol!", Next a STRING: Now have 118 objects
-Freeing a STRING name-> "i am cow hear me moo", Next a NUMBER: Now have 117 objects
-Freeing a NUMBER number-> 456.789, Next a NUMBER: Now have 116 objects
-Freeing a NUMBER number-> 123, Next a LIST: Now have 115 objects
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked STRING
-Skipping marked LIST
-Skipping marked NUMBER
-GC done, freed 5 objects
-Allocating a LIST: Now have 116 objects
-Allocating a LIST: Now have 117 objects
-Allocating a NUMBER: Now have 118 objects
-Allocating a NUMBER: Now have 119 objects
-Allocating a STRING: Now have 120 objects
-Allocating a SYMBOL: Now have 121 objects
-Allocating a NUMBER: Now have 122 objects
-Allocating a LIST: Now have 123 objects
-Allocating a LIST: Now have 124 objects
-Allocating a NUMBER: Now have 125 objects
-Allocating a LIST: Now have 126 objects
-Allocating a LIST: Now have 127 objects
-Allocating a NUMBER: Now have 128 objects
-Allocating a LIST: Now have 129 objects
-Allocating a LIST: Now have 130 objects
-Allocating a NUMBER: Now have 131 objects
-Allocating a LIST: Now have 132 objects
-Allocating a LIST: Now have 133 objects
-Allocating a NUMBER: Now have 134 objects
-Allocating a LIST: Now have 135 objects
-Allocating a LIST: Now have 136 objects
-Allocating a NUMBER: Now have 137 objects
-Allocating a LIST: Now have 138 objects
-Allocating a LIST: Now have 139 objects
-Allocating a NUMBER: Now have 140 objects
-Allocating a LIST: Now have 141 objects
-Allocating a LIST: Now have 142 objects
-Allocating a NUMBER: Now have 143 objects
-Allocating a LIST: Now have 144 objects
-Allocating a LIST: Now have 145 objects
-Allocating a NUMBER: Now have 146 objects
-Allocating a LIST: Now have 147 objects
-Allocating a LIST: Now have 148 objects
-Allocating a NUMBER: Now have 149 objects
-Allocating a LIST: Now have 150 objects
-Allocating a LIST: Now have 151 objects
-Allocating a NUMBER: Now have 152 objects
-Allocating a LIST: Now have 153 objects
-Allocating a LIST: Now have 154 objects
-Allocating a SCOPE: Now have 155 objects
-Allocating a CNFUNCTION: Now have 156 objects
-156 objects
-Entering GC
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking NULL
@@ -804,149 +57,12 @@ Marking a CNFUNCTION
 Marking NULL
 Marking NULL
 Marking NULL
+Marking GC_STACK
 Marking NULL
+Done marking GC_STACK
 Marking NULL
 Skipping marked CNFUNCTION
 Skipping marked SCOPE
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Freeing a SYMBOL name-> "Symbol!", Next a STRING: Now have 155 objects
-Freeing a STRING name-> "i am cow hear me moo", Next a NUMBER: Now have 154 objects
-Freeing a NUMBER number-> 456.789, Next a NUMBER: Now have 153 objects
-Freeing a NUMBER number-> 123, Next a LIST: Now have 152 objects
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
 Skipping marked LIST
 Skipping marked NUMBER
 Skipping marked LIST
@@ -962,8 +78,13 @@ Skipping marked LIST
 Skipping marked STRING
 Skipping marked LIST
 Skipping marked NUMBER
+Skipping marked LIST
+Freeing a SYMBOL name-> "Symbol!", Next a STRING: Now have 21 objects
+Freeing a STRING name-> "i am cow hear me moo", Next a NUMBER: Now have 20 objects
+Freeing a NUMBER number-> 456.789, Next a NUMBER: Now have 19 objects
+Freeing a NUMBER number-> 123, No next: Now have 18 objects
 GC done, freed 4 objects
-152 objects after gc
+18 objects after gc
 
 
 -----test 2: tokenizer----
@@ -991,103 +112,159 @@ Print
 -----test 3: compiler----
 
 making stringstream...
-Allocating a LIST: Now have 153 objects
+Entering GC
+Marking a LIST
+Marking a STRING
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking NULL
+Marking NULL
+Marking a SCOPE
+Marking a CNFUNCTION
+Marking NULL
+Marking NULL
+Marking NULL
+Marking GC_STACK
+Marking NULL
+Done marking GC_STACK
+Marking NULL
+Skipping marked CNFUNCTION
+Skipping marked SCOPE
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked STRING
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+GC done, freed 0 objects
+Allocating a BLOCK: Now have 19 objects
 Top of Outer loop
-Allocating a LIST: Now have 154 objects
+Allocating a LINE: Now have 20 objects
 Top of Inner loop
 Normal symbol: For
-Allocating a SYMBOL: Now have 155 objects
-Allocating a LINE: Now have 156 objects
+Allocating a SYMBOL: Now have 21 objects
+Allocating a LINE: Now have 22 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 157 objects
+Allocating a BLOCK: Now have 23 objects
 Top of Inner loop
 Normal symbol: Range
-Allocating a SYMBOL: Now have 158 objects
-Allocating a LINE: Now have 159 objects
+Allocating a SYMBOL: Now have 24 objects
+Allocating a LINE: Now have 25 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 160 objects
+Allocating a BLOCK: Now have 26 objects
 Top of Inner loop
-Number: 1.000000
-Allocating a NUMBER: Now have 161 objects
-Allocating a LINE: Now have 162 objects
+Number: 1
+Allocating a NUMBER: Now have 27 objects
+Allocating a LINE: Now have 28 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 163 objects
+Allocating a BLOCK: Now have 29 objects
 Top of Inner loop
-Number: 10.000000
-Allocating a NUMBER: Now have 164 objects
-Allocating a LINE: Now have 165 objects
+Number: 10
+Allocating a NUMBER: Now have 30 objects
+Allocating a LINE: Now have 31 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 166 objects
+Allocating a BLOCK: Now have 32 objects
 Top of Inner loop
 Normal symbol: -step
-Allocating a SYMBOL: Now have 167 objects
-Allocating a LINE: Now have 168 objects
+Allocating a SYMBOL: Now have 33 objects
+Allocating a LINE: Now have 34 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 169 objects
+Allocating a BLOCK: Now have 35 objects
 Top of Inner loop
-Number: 3.000000
-Allocating a NUMBER: Now have 170 objects
-Allocating a LINE: Now have 171 objects
+Number: 3
+Allocating a NUMBER: Now have 36 objects
+Allocating a LINE: Now have 37 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 172 objects
+Allocating a BLOCK: Now have 38 objects
 Top of Inner loop
 Bracket
-Allocating a LIST: Now have 173 objects
+GC disabled, aborting GC
+Allocating a BLOCK: Now have 39 objects
 Top of Outer loop
-Allocating a LIST: Now have 174 objects
+Allocating a LINE: Now have 40 objects
 Top of Inner loop
 Normal symbol: Square
-Allocating a SYMBOL: Now have 175 objects
-Allocating a LINE: Now have 176 objects
+Allocating a SYMBOL: Now have 41 objects
+Allocating a LINE: Now have 42 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 177 objects
+Allocating a BLOCK: Now have 43 objects
 Top of Inner loop
 Semicolon
 Top of Outer loop
-Allocating a LIST: Now have 178 objects
+Allocating a LINE: Now have 44 objects
 Top of Inner loop
 Normal symbol: Print
-Allocating a SYMBOL: Now have 179 objects
-Allocating a LINE: Now have 180 objects
+Allocating a SYMBOL: Now have 45 objects
+Allocating a LINE: Now have 46 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 181 objects
+Allocating a BLOCK: Now have 47 objects
 Top of Inner loop
 Normal symbol: Fibbonaci
-Allocating a SYMBOL: Now have 182 objects
-Allocating a LINE: Now have 183 objects
+Allocating a SYMBOL: Now have 48 objects
+Allocating a LINE: Now have 49 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 184 objects
+Allocating a BLOCK: Now have 50 objects
 Top of Inner loop
 Semicolon
 Top of Outer loop
-Allocating a LIST: Now have 185 objects
+Allocating a LINE: Now have 51 objects
 Top of Inner loop
 Hit Stop, returning
 Bottom of outer loop
-Allocating a BLOCK: Now have 186 objects
+Allocating a BLOCK: Now have 52 objects
 Top of Inner loop
 Semicolon
 Top of Outer loop
-Allocating a LIST: Now have 187 objects
+Allocating a LINE: Now have 53 objects
 Top of Inner loop
 Normal symbol: Print
-Allocating a LINE: Now have 188 objects
+Allocating a LINE: Now have 54 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 189 objects
+Allocating a BLOCK: Now have 55 objects
 Top of Inner loop
 String: DONE!!
-Allocating a STRING: Now have 190 objects
-Allocating a LINE: Now have 191 objects
+Allocating a STRING: Now have 56 objects
+Allocating a LINE: Now have 57 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 192 objects
+Allocating a BLOCK: Now have 58 objects
 Top of Inner loop
-Number: 123.000000
-Allocating a NUMBER: Now have 193 objects
-Allocating a LINE: Now have 194 objects
+Number: 123
+Allocating a NUMBER: Now have 59 objects
+Allocating a LINE: Now have 60 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 195 objects
+Allocating a BLOCK: Now have 61 objects
 feof() false, returning
-Returned 0: Compile returned NULL!!
+Returned 0: BLOCK
 collecting garbage
 Entering GC
 Marking a LIST
@@ -1096,198 +273,22 @@ Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking NULL
@@ -1297,188 +298,55 @@ Marking a CNFUNCTION
 Marking NULL
 Marking NULL
 Marking NULL
+Marking GC_STACK
 Marking NULL
+Done marking GC_STACK
 Marking NULL
-Freeing a BLOCK, Next a LINE: Now have 194 objects
-Freeing a LINE, Next a NUMBER: Now have 193 objects
-Freeing a NUMBER number-> 123, Next a BLOCK: Now have 192 objects
-Freeing a BLOCK, Next a LINE: Now have 191 objects
-Freeing a LINE, Next a STRING: Now have 190 objects
-Freeing a STRING name-> "DONE!!", Next a BLOCK: Now have 189 objects
-Freeing a BLOCK, Next a LINE: Now have 188 objects
-Freeing a LINE, Next a LIST: Now have 187 objects
-Freeing a LIST, Next a BLOCK: Now have 186 objects
-Freeing a BLOCK, Next a LIST: Now have 185 objects
-Freeing a LIST, Next a BLOCK: Now have 184 objects
-Freeing a BLOCK, Next a LINE: Now have 183 objects
-Freeing a LINE, Next a SYMBOL: Now have 182 objects
-Freeing a SYMBOL name-> "Fibbonaci", Next a BLOCK: Now have 181 objects
-Freeing a BLOCK, Next a LINE: Now have 180 objects
-Freeing a LINE, Next a SYMBOL: Now have 179 objects
-Freeing a SYMBOL name-> "Print", Next a LIST: Now have 178 objects
-Freeing a LIST, Next a BLOCK: Now have 177 objects
-Freeing a BLOCK, Next a LINE: Now have 176 objects
-Freeing a LINE, Next a SYMBOL: Now have 175 objects
-Freeing a SYMBOL name-> "Square", Next a LIST: Now have 174 objects
-Freeing a LIST, Next a LIST: Now have 173 objects
-Freeing a LIST, Next a BLOCK: Now have 172 objects
-Freeing a BLOCK, Next a LINE: Now have 171 objects
-Freeing a LINE, Next a NUMBER: Now have 170 objects
-Freeing a NUMBER number-> 3, Next a BLOCK: Now have 169 objects
-Freeing a BLOCK, Next a LINE: Now have 168 objects
-Freeing a LINE, Next a SYMBOL: Now have 167 objects
-Freeing a SYMBOL name-> "-step", Next a BLOCK: Now have 166 objects
-Freeing a BLOCK, Next a LINE: Now have 165 objects
-Freeing a LINE, Next a NUMBER: Now have 164 objects
-Freeing a NUMBER number-> 10, Next a BLOCK: Now have 163 objects
-Freeing a BLOCK, Next a LINE: Now have 162 objects
-Freeing a LINE, Next a NUMBER: Now have 161 objects
-Freeing a NUMBER number-> 1, Next a BLOCK: Now have 160 objects
-Freeing a BLOCK, Next a LINE: Now have 159 objects
-Freeing a LINE, Next a SYMBOL: Now have 158 objects
-Freeing a SYMBOL name-> "Range", Next a BLOCK: Now have 157 objects
-Freeing a BLOCK, Next a LINE: Now have 156 objects
-Freeing a LINE, Next a SYMBOL: Now have 155 objects
-Freeing a SYMBOL name-> "For", Next a LIST: Now have 154 objects
-Freeing a LIST, Next a LIST: Now have 153 objects
-Freeing a LIST, Next a CNFUNCTION: Now have 152 objects
+Freeing a BLOCK, Next a LINE: Now have 60 objects
+Freeing a LINE, Next a NUMBER: Now have 59 objects
+Freeing a NUMBER number-> 123, Next a BLOCK: Now have 58 objects
+Freeing a BLOCK, Next a LINE: Now have 57 objects
+Freeing a LINE, Next a STRING: Now have 56 objects
+Freeing a STRING name-> "DONE!!", Next a BLOCK: Now have 55 objects
+Freeing a BLOCK, Next a LINE: Now have 54 objects
+Freeing a LINE, Next a LINE: Now have 53 objects
+Freeing a LINE, Next a BLOCK: Now have 52 objects
+Freeing a BLOCK, Next a LINE: Now have 51 objects
+Freeing a LINE, Next a BLOCK: Now have 50 objects
+Freeing a BLOCK, Next a LINE: Now have 49 objects
+Freeing a LINE, Next a SYMBOL: Now have 48 objects
+Freeing a SYMBOL name-> "Fibbonaci", Next a BLOCK: Now have 47 objects
+Freeing a BLOCK, Next a LINE: Now have 46 objects
+Freeing a LINE, Next a SYMBOL: Now have 45 objects
+Freeing a SYMBOL name-> "Print", Next a LINE: Now have 44 objects
+Freeing a LINE, Next a BLOCK: Now have 43 objects
+Freeing a BLOCK, Next a LINE: Now have 42 objects
+Freeing a LINE, Next a SYMBOL: Now have 41 objects
+Freeing a SYMBOL name-> "Square", Next a LINE: Now have 40 objects
+Freeing a LINE, Next a BLOCK: Now have 39 objects
+Freeing a BLOCK, Next a BLOCK: Now have 38 objects
+Freeing a BLOCK, Next a LINE: Now have 37 objects
+Freeing a LINE, Next a NUMBER: Now have 36 objects
+Freeing a NUMBER number-> 3, Next a BLOCK: Now have 35 objects
+Freeing a BLOCK, Next a LINE: Now have 34 objects
+Freeing a LINE, Next a SYMBOL: Now have 33 objects
+Freeing a SYMBOL name-> "-step", Next a BLOCK: Now have 32 objects
+Freeing a BLOCK, Next a LINE: Now have 31 objects
+Freeing a LINE, Next a NUMBER: Now have 30 objects
+Freeing a NUMBER number-> 10, Next a BLOCK: Now have 29 objects
+Freeing a BLOCK, Next a LINE: Now have 28 objects
+Freeing a LINE, Next a NUMBER: Now have 27 objects
+Freeing a NUMBER number-> 1, Next a BLOCK: Now have 26 objects
+Freeing a BLOCK, Next a LINE: Now have 25 objects
+Freeing a LINE, Next a SYMBOL: Now have 24 objects
+Freeing a SYMBOL name-> "Range", Next a BLOCK: Now have 23 objects
+Freeing a BLOCK, Next a LINE: Now have 22 objects
+Freeing a LINE, Next a SYMBOL: Now have 21 objects
+Freeing a SYMBOL name-> "For", Next a LINE: Now have 20 objects
+Freeing a LINE, Next a BLOCK: Now have 19 objects
+Freeing a BLOCK, Next a CNFUNCTION: Now have 18 objects
 Skipping marked CNFUNCTION
 Skipping marked SCOPE
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
 Skipping marked LIST
 Skipping marked NUMBER
 Skipping marked LIST
@@ -1494,12 +362,13 @@ Skipping marked LIST
 Skipping marked STRING
 Skipping marked LIST
 Skipping marked NUMBER
+Skipping marked LIST
 GC done, freed 43 objects
 
 
 -----test 4: freeing a fmemopen()'ed stream----
 
-Allocating a STREAM: Now have 153 objects
+Allocating a STREAM: Now have 19 objects
 Entering GC
 Marking a LIST
 Marking a STRING
@@ -1507,198 +376,22 @@ Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking a LIST
 Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
-Marking a LIST
-Marking a NUMBER
-Marking a LIST
-Marking a STRING
+Already marked, returning
 Marking a LIST
 Marking a NUMBER
 Marking NULL
@@ -1708,146 +401,13 @@ Marking a CNFUNCTION
 Marking NULL
 Marking NULL
 Marking NULL
+Marking GC_STACK
 Marking NULL
+Done marking GC_STACK
 Marking NULL
-Freeing a STREAM +FILE name-> "stringstream", Next a CNFUNCTION: Now have 152 objects
+Freeing a STREAM +FILE name-> "stringstream", Next a CNFUNCTION: Now have 18 objects
 Skipping marked CNFUNCTION
 Skipping marked SCOPE
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
-Skipping marked LIST
-Skipping marked NUMBER
-Skipping marked LIST
 Skipping marked LIST
 Skipping marked NUMBER
 Skipping marked LIST
@@ -1863,6 +423,7 @@ Skipping marked LIST
 Skipping marked STRING
 Skipping marked LIST
 Skipping marked NUMBER
+Skipping marked LIST
 GC done, freed 1 objects
 
 
@@ -1872,158 +433,26 @@ Entering GC
 Marking NULL
 Marking NULL
 Marking NULL
+Marking GC_STACK
 Marking NULL
+Done marking GC_STACK
 Marking NULL
-Freeing a CNFUNCTION name-> "MyFunction", Next a SCOPE: Now have 151 objects
-Freeing a SCOPE, Next a LIST: Now have 150 objects
-Freeing a LIST, Next a LIST: Now have 149 objects
-Freeing a LIST, Next a NUMBER: Now have 148 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 147 objects
-Freeing a LIST, Next a LIST: Now have 146 objects
-Freeing a LIST, Next a NUMBER: Now have 145 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 144 objects
-Freeing a LIST, Next a LIST: Now have 143 objects
-Freeing a LIST, Next a NUMBER: Now have 142 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 141 objects
-Freeing a LIST, Next a LIST: Now have 140 objects
-Freeing a LIST, Next a NUMBER: Now have 139 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 138 objects
-Freeing a LIST, Next a LIST: Now have 137 objects
-Freeing a LIST, Next a NUMBER: Now have 136 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 135 objects
-Freeing a LIST, Next a LIST: Now have 134 objects
-Freeing a LIST, Next a NUMBER: Now have 133 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 132 objects
-Freeing a LIST, Next a LIST: Now have 131 objects
-Freeing a LIST, Next a NUMBER: Now have 130 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 129 objects
-Freeing a LIST, Next a LIST: Now have 128 objects
-Freeing a LIST, Next a NUMBER: Now have 127 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 126 objects
-Freeing a LIST, Next a LIST: Now have 125 objects
-Freeing a LIST, Next a NUMBER: Now have 124 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 123 objects
-Freeing a LIST, Next a LIST: Now have 122 objects
-Freeing a LIST, Next a NUMBER: Now have 121 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 120 objects
-Freeing a LIST, Next a LIST: Now have 119 objects
-Freeing a LIST, Next a NUMBER: Now have 118 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 117 objects
-Freeing a LIST, Next a LIST: Now have 116 objects
-Freeing a LIST, Next a LIST: Now have 115 objects
-Freeing a LIST, Next a LIST: Now have 114 objects
-Freeing a LIST, Next a NUMBER: Now have 113 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 112 objects
-Freeing a LIST, Next a LIST: Now have 111 objects
-Freeing a LIST, Next a NUMBER: Now have 110 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 109 objects
-Freeing a LIST, Next a LIST: Now have 108 objects
-Freeing a LIST, Next a NUMBER: Now have 107 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 106 objects
-Freeing a LIST, Next a LIST: Now have 105 objects
-Freeing a LIST, Next a NUMBER: Now have 104 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 103 objects
-Freeing a LIST, Next a LIST: Now have 102 objects
-Freeing a LIST, Next a NUMBER: Now have 101 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 100 objects
-Freeing a LIST, Next a LIST: Now have 99 objects
-Freeing a LIST, Next a NUMBER: Now have 98 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 97 objects
-Freeing a LIST, Next a LIST: Now have 96 objects
-Freeing a LIST, Next a NUMBER: Now have 95 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 94 objects
-Freeing a LIST, Next a LIST: Now have 93 objects
-Freeing a LIST, Next a NUMBER: Now have 92 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 91 objects
-Freeing a LIST, Next a LIST: Now have 90 objects
-Freeing a LIST, Next a NUMBER: Now have 89 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 88 objects
-Freeing a LIST, Next a LIST: Now have 87 objects
-Freeing a LIST, Next a NUMBER: Now have 86 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 85 objects
-Freeing a LIST, Next a LIST: Now have 84 objects
-Freeing a LIST, Next a NUMBER: Now have 83 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 82 objects
-Freeing a LIST, Next a LIST: Now have 81 objects
-Freeing a LIST, Next a NUMBER: Now have 80 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 79 objects
-Freeing a LIST, Next a LIST: Now have 78 objects
-Freeing a LIST, Next a NUMBER: Now have 77 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 76 objects
-Freeing a LIST, Next a LIST: Now have 75 objects
-Freeing a LIST, Next a NUMBER: Now have 74 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 73 objects
-Freeing a LIST, Next a LIST: Now have 72 objects
-Freeing a LIST, Next a NUMBER: Now have 71 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 70 objects
-Freeing a LIST, Next a LIST: Now have 69 objects
-Freeing a LIST, Next a NUMBER: Now have 68 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 67 objects
-Freeing a LIST, Next a LIST: Now have 66 objects
-Freeing a LIST, Next a NUMBER: Now have 65 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 64 objects
-Freeing a LIST, Next a LIST: Now have 63 objects
-Freeing a LIST, Next a NUMBER: Now have 62 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 61 objects
-Freeing a LIST, Next a LIST: Now have 60 objects
-Freeing a LIST, Next a NUMBER: Now have 59 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 58 objects
-Freeing a LIST, Next a LIST: Now have 57 objects
-Freeing a LIST, Next a NUMBER: Now have 56 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 55 objects
-Freeing a LIST, Next a LIST: Now have 54 objects
-Freeing a LIST, Next a NUMBER: Now have 53 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 52 objects
-Freeing a LIST, Next a LIST: Now have 51 objects
-Freeing a LIST, Next a NUMBER: Now have 50 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 49 objects
-Freeing a LIST, Next a LIST: Now have 48 objects
-Freeing a LIST, Next a NUMBER: Now have 47 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 46 objects
-Freeing a LIST, Next a LIST: Now have 45 objects
-Freeing a LIST, Next a NUMBER: Now have 44 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 43 objects
-Freeing a LIST, Next a LIST: Now have 42 objects
-Freeing a LIST, Next a NUMBER: Now have 41 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 40 objects
-Freeing a LIST, Next a LIST: Now have 39 objects
-Freeing a LIST, Next a NUMBER: Now have 38 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 37 objects
-Freeing a LIST, Next a LIST: Now have 36 objects
-Freeing a LIST, Next a NUMBER: Now have 35 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 34 objects
-Freeing a LIST, Next a LIST: Now have 33 objects
-Freeing a LIST, Next a NUMBER: Now have 32 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 31 objects
-Freeing a LIST, Next a LIST: Now have 30 objects
-Freeing a LIST, Next a NUMBER: Now have 29 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 28 objects
-Freeing a LIST, Next a LIST: Now have 27 objects
-Freeing a LIST, Next a NUMBER: Now have 26 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 25 objects
-Freeing a LIST, Next a LIST: Now have 24 objects
-Freeing a LIST, Next a NUMBER: Now have 23 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 22 objects
-Freeing a LIST, Next a LIST: Now have 21 objects
-Freeing a LIST, Next a NUMBER: Now have 20 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 19 objects
-Freeing a LIST, Next a LIST: Now have 18 objects
-Freeing a LIST, Next a NUMBER: Now have 17 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 16 objects
-Freeing a LIST, Next a LIST: Now have 15 objects
-Freeing a LIST, Next a NUMBER: Now have 14 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 13 objects
-Freeing a LIST, Next a LIST: Now have 12 objects
-Freeing a LIST, Next a NUMBER: Now have 11 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 10 objects
-Freeing a LIST, Next a LIST: Now have 9 objects
-Freeing a LIST, Next a NUMBER: Now have 8 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 7 objects
-Freeing a LIST, Next a LIST: Now have 6 objects
-Freeing a LIST, Next a NUMBER: Now have 5 objects
-Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 4 objects
-Freeing a LIST, Next a STRING: Now have 3 objects
-Freeing a STRING name-> "Foo123", Next a LIST: Now have 2 objects
-Freeing a LIST, Next a NUMBER: Now have 1 objects
-Freeing a NUMBER number-> 1.7e+123, No next: Now have 0 objects
-GC done, freed 152 objects
+Freeing a CNFUNCTION name-> "MyFunction", Next a SCOPE: Now have 17 objects
+Freeing a SCOPE, Next a LIST: Now have 16 objects
+Freeing a LIST, Next a NUMBER: Now have 15 objects
+Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 14 objects
+Freeing a LIST, Next a LIST: Now have 13 objects
+Freeing a LIST, Next a NUMBER: Now have 12 objects
+Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 11 objects
+Freeing a LIST, Next a LIST: Now have 10 objects
+Freeing a LIST, Next a NUMBER: Now have 9 objects
+Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 8 objects
+Freeing a LIST, Next a LIST: Now have 7 objects
+Freeing a LIST, Next a NUMBER: Now have 6 objects
+Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 5 objects
+Freeing a LIST, Next a STRING: Now have 4 objects
+Freeing a STRING name-> "Foo123", Next a LIST: Now have 3 objects
+Freeing a LIST, Next a NUMBER: Now have 2 objects
+Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 1 objects
+Freeing a LIST, No next: Now have 0 objects
+GC done, freed 18 objects
