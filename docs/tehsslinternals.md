@@ -27,7 +27,7 @@ Cells 3-5 change based on the object. Here are how all the types use them (may b
 | STRING     | `char*` contents         |                          |                    |
 | STREAM     | `char*` id               | `FILE*`                  |                    |
 | USERTYPE   | `char*` typename         | any pointer              | any pointer        |
-| SCOPE      | functions list           | variables list           | parent scope       |
+| SCOPE      |                          | bindings list            | parent scope       |
 | UNFUNCTION | `char*` name             | function BLOCK           | next function      |
 | CNFUNCTION | `char*` name             | C function pointer       | next function      |
 | CMFUNCTION | `char*` name             | C macro function pointer | next macro         |

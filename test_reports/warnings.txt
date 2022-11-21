@@ -1,36 +1,36 @@
-tehssl.cpp:116:9: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
-  116 |         };
+tehssl.cpp:115:9: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
+  115 |         };
       |         ^
 tehssl.cpp: In function ‘void tehssl_init_builtins(tehssl_vm_t)’:
-tehssl.cpp:882:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
-  882 | void tehssl_init_builtins(tehssl_vm_t vm) {
+tehssl.cpp:872:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  872 | void tehssl_init_builtins(tehssl_vm_t vm) {
       |                           ~~~~~~~~~~~~^~
 tehssl.cpp: In function ‘void myfunction(tehssl_vm_t, tehssl_object_t)’:
-tehssl.cpp:887:29: warning: unused parameter ‘vm’ [-Wunused-parameter]
-  887 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
+tehssl.cpp:877:29: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  877 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
       |                 ~~~~~~~~~~~~^~
-tehssl.cpp:887:49: warning: unused parameter ‘scope’ [-Wunused-parameter]
-  887 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
+tehssl.cpp:877:49: warning: unused parameter ‘scope’ [-Wunused-parameter]
+  877 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
       |                                 ~~~~~~~~~~~~~~~~^~~~~
 tehssl.cpp: In function ‘int main(int, char**)’:
-tehssl.cpp:897:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  897 |         tehssl_make_string(vm, "i am cow hear me moo");
+tehssl.cpp:887:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  887 |         tehssl_make_string(vm, "i am cow hear me moo");
       |                                ^~~~~~~~~~~~~~~~~~~~~~
-tehssl.cpp:898:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  898 |         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
+tehssl.cpp:888:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  888 |         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
       |                                ^~~~~~~~~
-tehssl.cpp:901:59: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  901 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
+tehssl.cpp:891:59: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  891 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
       |                                                           ^~~~~~~~
-tehssl.cpp:411:106: note: in definition of macro ‘tehssl_push’
-  411 | #define tehssl_push(vm, stack, item) do { tehssl_object_t cell = tehssl_alloc((vm), LIST); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
+tehssl.cpp:410:106: note: in definition of macro ‘tehssl_push’
+  410 | #define tehssl_push(vm, stack, item) do { tehssl_object_t cell = tehssl_alloc((vm), LIST); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
       |                                                                                                          ^~~~
-tehssl.cpp:942:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  942 |     tehssl_make_stream(vm, "stringstream", s);
+tehssl.cpp:932:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  932 |     tehssl_make_stream(vm, "stringstream", s);
       |                            ^~~~~~~~~~~~~~
-tehssl.cpp:888:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
-  888 | int main(int argc, char* argv[]) {
+tehssl.cpp:878:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
+  878 | int main(int argc, char* argv[]) {
       |          ~~~~^~~~
-tehssl.cpp:888:26: warning: unused parameter ‘argv’ [-Wunused-parameter]
-  888 | int main(int argc, char* argv[]) {
+tehssl.cpp:878:26: warning: unused parameter ‘argv’ [-Wunused-parameter]
+  878 | int main(int argc, char* argv[]) {
       |                    ~~~~~~^~~~~~

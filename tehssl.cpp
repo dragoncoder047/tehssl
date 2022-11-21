@@ -44,7 +44,7 @@ enum tehssl_typeid {
     STREAM,      //   char*        FILE*
     USERTYPE,    //   char*        (ptr1)       (ptr2)
     // Special internal types
-    SCOPE,       //   (functions)  (variables)  (parent)
+    SCOPE,       //                (bindings)   (parent)
     UNFUNCTION,  //   char*        (block)      (next)
     CNFUNCTION,  //   char*        fun_t        (next)
     CMFUNCTION,  //   char*        macfun_t     (next)
@@ -93,14 +93,13 @@ struct tehssl_object {
             union {
                 tehssl_object_t key;
                 tehssl_object_t scope;
-                tehssl_object_t functions;
                 char* name;
             };
             union {
                 tehssl_object_t value;
                 tehssl_object_t item;
                 tehssl_object_t code;
-                tehssl_object_t variables;
+                tehssl_object_t bindings;
                 tehssl_object_t block;
                 tehssl_object_t ptr1;
                 FILE* file;
@@ -265,12 +264,12 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
     tehssl_set_flag(object, GC_MARK);
     switch (object->type) {
         case DICT:
-        case SCOPE:
             tehssl_markobject(vm, object->key);
             // fallthrough
         case BLOCK:
         case LIST:
         case LINE:
+        case SCOPE:
             tehssl_markobject(vm, object->value);
             object = object->next;
             goto MARK;
@@ -480,16 +479,13 @@ tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, char* type, void* data) {
 }
 
 // Lookup values in scope
-#define LOOKUP_FUNCTION 0
-#define LOOKUP_VARIABLE 1
-tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t where) {
+tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, tehssl_typeid_t what) {
     LOOKUP:
     if (scope == NULL || scope->type != SCOPE) return NULL;
     tehssl_object_t result = NULL;
-    if (where == LOOKUP_VARIABLE) result = scope->variables;
-    else result = scope->functions;
+    result = scope->bindings;
     while (result != NULL) {
-        if (strcmp(result->name, name) == 0) return result;
+        if (result->type == what && strcmp(result->name, name) == 0) return result;
         result = result->next;
     }
     scope = scope->parent;
@@ -664,11 +660,7 @@ char* tehssl_next_token(FILE* file) {
     }
     if (ch == EOF) {
         if (!string) goto DONE;
-        else {
-            free(buffer);
-            // unexpected EOF
-            return NULL;
-        }
+        else goto ERROR;
     }
     // Parens and ; are their own token
     // unless in a string
@@ -704,6 +696,9 @@ char* tehssl_next_token(FILE* file) {
     goto NEXTCHAR;
     DONE:
     return buffer;
+    ERROR:
+    free(buffer);
+    return NULL;
 }
 
 // Compiler
@@ -766,34 +761,29 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                     printf("Number: %g\n", num);
                     #endif
                     item = tehssl_make_number(vm, num);
-                } else if (strcmp(token, "NaN") == 0) {
-                    #ifdef TEHSSL_DEBUG
-                    printf("NAN\n");
-                    #endif
-                    item = tehssl_make_number(vm, 0.0f / 0.0f);
                 } else if (strcmp(token, "True") == 0) {
                     #ifdef TEHSSL_DEBUG
-                    printf("TRUE\n");
+                    printf("TRUE literal\n");
                     #endif
                     item = tehssl_make_singleton(vm, TRUE);
                 } else if (strcmp(token, "False") == 0) {
                     #ifdef TEHSSL_DEBUG
-                    printf("FALSE\n");
+                    printf("FALSE literal\n");
                     #endif
                     item = tehssl_make_singleton(vm, FALSE);
                 } else if (strcmp(token, "Undefined") == 0) {
                     #ifdef TEHSSL_DEBUG
-                    printf("UNDEFINED\n");
+                    printf("UNDEFINED literal\n");
                     #endif
                     item = tehssl_make_singleton(vm, UNDEFINED);
                 } else if (strcmp(token, "DNE") == 0) {
                     #ifdef TEHSSL_DEBUG
-                    printf("DNEX\n");
+                    printf("DNE literal\n");
                     #endif
                     item = tehssl_make_singleton(vm, DNE);
                 } else if (strcmp(token, "Null") == 0) {
                     #ifdef TEHSSL_DEBUG
-                    printf("Nul\n");
+                    printf("Null literal\n");
                     #endif
                     // item is already NULL
                 } else if (token[0] == '"') {
@@ -866,8 +856,8 @@ void tehssl_register_word(tehssl_vm_t vm, const char* name, tehssl_fun_t fun) {
     tehssl_object_t fobj = tehssl_alloc(vm, CNFUNCTION);
     fobj->name = strdup(name);
     fobj->c_function = fun;
-    fobj->next = vm->global_scope->functions;
-    vm->global_scope->functions = fobj;
+    fobj->next = vm->global_scope->bindings;
+    vm->global_scope->bindings = fobj;
 }
 
 // Register C types
@@ -886,7 +876,7 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
 #ifdef TEHSSL_TEST
 void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
 int main(int argc, char* argv[]) {
-    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A -step 3 do { take the Square; Print the Fibbonaci of said square; }; Print \"DONE!!\" 123";
+    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A -step 3 do { take the Square; Print the Fibbonaci of said square; };\n~~Literals\nPrints {\"DONE!!\" 123 123.456E789 Infinity NaN Undefined DNE False True}";
     tehssl_vm_t vm = tehssl_new_vm();
 
     printf("\n\n-----test 1: garbage collector----\n\n");

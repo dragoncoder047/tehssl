@@ -56,7 +56,6 @@ Marking a SCOPE
 Marking a CNFUNCTION
 Marking NULL
 Marking NULL
-Marking NULL
 Marking GC_STACK
 Marking NULL
 Done marking GC_STACK
@@ -104,9 +103,20 @@ Fibbonaci
 ;
 }
 ;
-Print
+Prints
+{
 "DONE!!"
 123
+123.456E789
+Infinity
+NaN
+Undefined
+DNE
+False
+True
+}
+
+EMPTY TOKEN!!
 
 
 -----test 3: compiler----
@@ -141,7 +151,6 @@ Marking NULL
 Marking NULL
 Marking a SCOPE
 Marking a CNFUNCTION
-Marking NULL
 Marking NULL
 Marking NULL
 Marking GC_STACK
@@ -247,23 +256,75 @@ Semicolon
 Top of Outer loop
 Allocating a LINE: Now have 53 objects
 Top of Inner loop
-Normal symbol: Print
-Allocating a LINE: Now have 54 objects
+Normal symbol: Prints
+Allocating a SYMBOL: Now have 54 objects
+Allocating a LINE: Now have 55 objects
 Bottom of outer loop
-Allocating a BLOCK: Now have 55 objects
+Allocating a BLOCK: Now have 56 objects
+Top of Inner loop
+Bracket
+GC disabled, aborting GC
+Allocating a BLOCK: Now have 57 objects
+Top of Outer loop
+Allocating a LINE: Now have 58 objects
 Top of Inner loop
 String: DONE!!
-Allocating a STRING: Now have 56 objects
-Allocating a LINE: Now have 57 objects
-Bottom of outer loop
-Allocating a BLOCK: Now have 58 objects
-Top of Inner loop
-Number: 123
-Allocating a NUMBER: Now have 59 objects
+Allocating a STRING: Now have 59 objects
 Allocating a LINE: Now have 60 objects
 Bottom of outer loop
 Allocating a BLOCK: Now have 61 objects
-feof() false, returning
+Top of Inner loop
+Number: 123
+Allocating a NUMBER: Now have 62 objects
+Allocating a LINE: Now have 63 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 64 objects
+Top of Inner loop
+Number: inf
+Allocating a LINE: Now have 65 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 66 objects
+Top of Inner loop
+Number: inf
+Allocating a LINE: Now have 67 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 68 objects
+Top of Inner loop
+Number: nan
+Allocating a NUMBER: Now have 69 objects
+Allocating a LINE: Now have 70 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 71 objects
+Top of Inner loop
+UNDEFINED literal
+Allocating a SINGLETON: Now have 72 objects
+Allocating a LINE: Now have 73 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 74 objects
+Top of Inner loop
+DNE literal
+Allocating a SINGLETON: Now have 75 objects
+Allocating a LINE: Now have 76 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 77 objects
+Top of Inner loop
+FALSE literal
+Allocating a SINGLETON: Now have 78 objects
+Allocating a LINE: Now have 79 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 80 objects
+Top of Inner loop
+TRUE literal
+Allocating a SINGLETON: Now have 81 objects
+Allocating a LINE: Now have 82 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 83 objects
+Top of Inner loop
+Hit Stop, returning
+Bottom of outer loop
+Allocating a BLOCK: Now have 84 objects
+Top of Inner loop
+Hit Stop, returning
 Returned 0: BLOCK
 collecting garbage
 Entering GC
@@ -297,19 +358,41 @@ Marking a SCOPE
 Marking a CNFUNCTION
 Marking NULL
 Marking NULL
-Marking NULL
 Marking GC_STACK
 Marking NULL
 Done marking GC_STACK
 Marking NULL
+Freeing a BLOCK, Next a BLOCK: Now have 83 objects
+Freeing a BLOCK, Next a LINE: Now have 82 objects
+Freeing a LINE, Next a SINGLETON: Now have 81 objects
+Freeing a SINGLETON singleton-> 0, Next a BLOCK: Now have 80 objects
+Freeing a BLOCK, Next a LINE: Now have 79 objects
+Freeing a LINE, Next a SINGLETON: Now have 78 objects
+Freeing a SINGLETON singleton-> 1, Next a BLOCK: Now have 77 objects
+Freeing a BLOCK, Next a LINE: Now have 76 objects
+Freeing a LINE, Next a SINGLETON: Now have 75 objects
+Freeing a SINGLETON singleton-> 3, Next a BLOCK: Now have 74 objects
+Freeing a BLOCK, Next a LINE: Now have 73 objects
+Freeing a LINE, Next a SINGLETON: Now have 72 objects
+Freeing a SINGLETON singleton-> 2, Next a BLOCK: Now have 71 objects
+Freeing a BLOCK, Next a LINE: Now have 70 objects
+Freeing a LINE, Next a NUMBER: Now have 69 objects
+Freeing a NUMBER number-> nan, Next a BLOCK: Now have 68 objects
+Freeing a BLOCK, Next a LINE: Now have 67 objects
+Freeing a LINE, Next a BLOCK: Now have 66 objects
+Freeing a BLOCK, Next a LINE: Now have 65 objects
+Freeing a LINE, Next a BLOCK: Now have 64 objects
+Freeing a BLOCK, Next a LINE: Now have 63 objects
+Freeing a LINE, Next a NUMBER: Now have 62 objects
+Freeing a NUMBER number-> 123, Next a BLOCK: Now have 61 objects
 Freeing a BLOCK, Next a LINE: Now have 60 objects
-Freeing a LINE, Next a NUMBER: Now have 59 objects
-Freeing a NUMBER number-> 123, Next a BLOCK: Now have 58 objects
-Freeing a BLOCK, Next a LINE: Now have 57 objects
-Freeing a LINE, Next a STRING: Now have 56 objects
-Freeing a STRING name-> "DONE!!", Next a BLOCK: Now have 55 objects
-Freeing a BLOCK, Next a LINE: Now have 54 objects
-Freeing a LINE, Next a LINE: Now have 53 objects
+Freeing a LINE, Next a STRING: Now have 59 objects
+Freeing a STRING name-> "DONE!!", Next a LINE: Now have 58 objects
+Freeing a LINE, Next a BLOCK: Now have 57 objects
+Freeing a BLOCK, Next a BLOCK: Now have 56 objects
+Freeing a BLOCK, Next a LINE: Now have 55 objects
+Freeing a LINE, Next a SYMBOL: Now have 54 objects
+Freeing a SYMBOL name-> "Prints", Next a LINE: Now have 53 objects
 Freeing a LINE, Next a BLOCK: Now have 52 objects
 Freeing a BLOCK, Next a LINE: Now have 51 objects
 Freeing a LINE, Next a BLOCK: Now have 50 objects
@@ -363,7 +446,7 @@ Skipping marked STRING
 Skipping marked LIST
 Skipping marked NUMBER
 Skipping marked LIST
-GC done, freed 43 objects
+GC done, freed 66 objects
 
 
 -----test 4: freeing a fmemopen()'ed stream----
@@ -398,7 +481,6 @@ Marking NULL
 Marking NULL
 Marking a SCOPE
 Marking a CNFUNCTION
-Marking NULL
 Marking NULL
 Marking NULL
 Marking GC_STACK
