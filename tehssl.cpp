@@ -407,7 +407,8 @@ void tehssl_destroy(tehssl_vm_t vm) {
 }
 
 // Push / Pop (for stacks)
-#define tehssl_push(vm, stack, item) do { tehssl_object_t cell = tehssl_alloc((vm), LIST); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
+#define tehssl_push_t(vm, stack, item, t) do { tehssl_object_t cell = tehssl_alloc((vm), (t)); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
+#define tehssl_push(vm, stack, item) tehssl_push_t(vm, stack, item, LIST)
 #define tehssl_pop(stack) do { if ((stack) != NULL) (stack) = (stack)->next; } while (false)
 
 // Make objects
@@ -479,13 +480,20 @@ tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, char* type, void* data) {
 }
 
 // Lookup values in scope
-tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, tehssl_typeid_t what) {
+#define FUN 0
+#define VAR 1
+#define MACRO 2
+tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t what) {
     LOOKUP:
     if (scope == NULL || scope->type != SCOPE) return NULL;
     tehssl_object_t result = NULL;
     result = scope->bindings;
     while (result != NULL) {
-        if (result->type == what && strcmp(result->name, name) == 0) return result;
+        if (what == FUN && result->type != UNFUNCTION && result->type != CNFUNCTION) goto NEXT;
+        if (what == VAR && result->type != VARIABLE) goto NEXT;
+        if (what == MACRO && result->type != CMFUNCTION) goto NEXT;
+        if (strcmp(result->name, name) == 0) return result;
+        NEXT:
         result = result->next;
     }
     scope = scope->parent;
@@ -508,6 +516,7 @@ void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
 
 #define IFERR(vm) if ((vm)->status == ERROR || (vm)->status == OUT_OF_MEMORY)
 #define RIE(vm) do { IFERR(vm) return; } while (false)
+#define RNIE(vm) do { IFERR(vm) return NULL; } while (false)
 #define PRIE(vm, stack) do { IFERR(vm) { tehssl_pop(&(stack)); return; } } while (false)
 #define ERR(vm, msg) do { tehssl_error(vm, (msg)); return; } while (false) 
 #define ERR2(vm, msg, detail) do { tehssl_error(vm, (msg), (detail)); return; } while (false)
@@ -708,6 +717,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
     vm->enable_gc = false;
     tehssl_object_t c_block = tehssl_alloc(vm, BLOCK);
     tehssl_object_t* block_tail = &c_block;
+    IFERR(vm) goto ERROR;
     // Outer loop: Lines
     while (!feof(stream)) {
         #ifdef TEHSSL_DEBUG
@@ -715,6 +725,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
         #endif
         tehssl_object_t c_line = tehssl_alloc(vm, LINE);
         tehssl_object_t* line_tail = &c_line;
+        IFERR(vm) goto ERROR;
         char* token = NULL;
         // Inner loop: items on the line
         while (!feof(stream)) {
@@ -800,10 +811,12 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                     #ifdef TEHSSL_DEBUG
                     printf("Normal symbol: %s\n", token);
                     #endif
+                    // TODO implement macros
                     item = tehssl_make_symbol(vm, token, SYMBOL_WORD);
                 }
                 free(token);
                 *line_tail = tehssl_alloc(vm, LINE);
+                IFERR(vm) goto ERROR;
                 (*line_tail)->value = item;
                 line_tail = &(*line_tail)->next;
             }
@@ -818,16 +831,97 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
     #ifdef TEHSSL_DEBUG
     printf("feof() false, returning\n");
     #endif
+    ERROR:
     vm->enable_gc = oldenable;
+    RNIE(vm);
     return c_block;
 }
 
-// Evaluator
-
+// Reverse a line
+tehssl_object_t tehssl_reverse_line(tehssl_vm_t vm, tehssl_object_t line) {
+    #ifdef TEHSSL_DEBUG
+    printf("Reversing a line\n");
+    #endif
+    tehssl_object_t reversed = NULL;
+    while (line != NULL) {
+        tehssl_push(vm, reversed, line->value);
+        RNIE(vm);
+        line = line->next;
+    }
+    #ifdef TEHSSL_DEBUG
+    printf("Done reversing a line\n");
+    #endif
+    return reversed;
+}
 
 #ifndef yield
 #define yield()
 #endif
+
+// Evaluator
+void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
+    #ifdef TEHSSL_DEBUG
+    printf("Entering evaluator\n");
+    #endif
+    tehssl_markobject(vm, block);
+    tehssl_markobject(vm, scope);
+    tehssl_gc(vm);
+    tehssl_push(vm, vm->gc_stack, block);
+    tehssl_push(vm, vm->gc_stack, scope);
+    while (block != NULL) {
+        tehssl_object_t rl = tehssl_reverse_line(vm, block->item);
+        tehssl_push(vm, vm->gc_stack, rl);
+        RIE(vm);
+        while (rl != NULL) {
+            yield();
+            tehssl_object_t item = rl->value;
+            if (tehssl_is_literal(item)) {
+                #ifdef TEHSSL_DEBUG
+                printf("Pushing a "); if (item != NULL) debug_print_type(item->type); else printf("NULL"); putchar('\n');
+                #endif
+                tehssl_push(vm, vm->stack, item);
+            } else {
+                if (item->type == BLOCK) {
+                    tehssl_object_t closure = tehssl_alloc(vm, CLOSURE);
+                    closure->block = item;
+                    closure->scope = scope;
+                    tehssl_push(vm, vm->stack, closure);
+                } else if (item->type == SYMBOL) {
+                    tehssl_object_t fun = tehssl_lookup(scope, item->name, FUN);
+                    tehssl_object_t var = tehssl_lookup(scope, item->name, VAR);
+                    if (var != NULL) {
+                        tehssl_push(vm, vm->stack, var->value);
+                    } else if (fun != NULL) {
+                        if (fun->type == CNFUNCTION) {
+                            fun->c_function(vm, scope);
+                        } else {
+                            tehssl_object_t new_scope = tehssl_alloc(vm, SCOPE);
+                            new_scope->parent = vm->global_scope;
+                            tehssl_eval(vm, fun->block, new_scope);
+                        }
+                    } else {
+                        tehssl_error(vm, "undefined", item->name);
+                        tehssl_pop(vm->gc_stack);
+                        goto DONE;
+                    }
+                }
+            }
+            rl = rl->next;
+        }
+        #ifdef TEHSSL_DEBUG
+        printf("Done with current line\n");
+        #endif
+        tehssl_pop(vm->gc_stack);
+    }
+    DONE:
+    #ifdef TEHSSL_DEBUG
+    printf("Leaving evaluator");
+    IFERR(vm) printf(" in error state");
+    putchar('\n');
+    #endif
+    tehssl_pop(vm->gc_stack);
+    tehssl_pop(vm->gc_stack);
+}
 
 void tehssl_run_string(tehssl_vm_t vm, const char* string) {
     FILE* ss = fmemopen((void*)string, strlen(string), "r");
@@ -842,7 +936,8 @@ void tehssl_run_string(tehssl_vm_t vm, const char* string) {
     debug_print_type(rv->type);
     putchar('\n');
     #endif
-    // tehssl_eval(vm, rv);
+    fclose(ss);
+    tehssl_eval(vm, rv, vm->global_scope);
 }
 
 
@@ -870,7 +965,7 @@ void tehssl_register_type(tehssl_vm_t vm, const char* name, tehssl_typefun_t fun
 }
 
 void tehssl_init_builtins(tehssl_vm_t vm) {
-    // TODO
+    // TODO add all builtins
 }
 
 #ifdef TEHSSL_TEST
@@ -932,6 +1027,8 @@ int main(int argc, char* argv[]) {
     tehssl_make_stream(vm, "stringstream", s);
     tehssl_gc(vm);
 
+    printf("\n\n-----test 5: evaluator----\n\n");
+    tehssl_run_string(vm, str);
 
     printf("\n\n-----tests complete----\n\n");
 

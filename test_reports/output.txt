@@ -509,6 +509,392 @@ Skipping marked LIST
 GC done, freed 1 objects
 
 
+-----test 5: evaluator----
+
+Entering GC
+Marking a LIST
+Marking a STRING
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking NULL
+Marking NULL
+Marking a SCOPE
+Marking a CNFUNCTION
+Marking NULL
+Marking NULL
+Marking GC_STACK
+Marking NULL
+Done marking GC_STACK
+Marking NULL
+Skipping marked CNFUNCTION
+Skipping marked SCOPE
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked STRING
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+GC done, freed 0 objects
+Allocating a BLOCK: Now have 19 objects
+Top of Outer loop
+Allocating a LINE: Now have 20 objects
+Top of Inner loop
+Normal symbol: For
+Allocating a SYMBOL: Now have 21 objects
+Allocating a LINE: Now have 22 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 23 objects
+Top of Inner loop
+Normal symbol: Range
+Allocating a SYMBOL: Now have 24 objects
+Allocating a LINE: Now have 25 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 26 objects
+Top of Inner loop
+Number: 1
+Allocating a NUMBER: Now have 27 objects
+Allocating a LINE: Now have 28 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 29 objects
+Top of Inner loop
+Number: 10
+Allocating a NUMBER: Now have 30 objects
+Allocating a LINE: Now have 31 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 32 objects
+Top of Inner loop
+Normal symbol: -step
+Allocating a SYMBOL: Now have 33 objects
+Allocating a LINE: Now have 34 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 35 objects
+Top of Inner loop
+Number: 3
+Allocating a NUMBER: Now have 36 objects
+Allocating a LINE: Now have 37 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 38 objects
+Top of Inner loop
+Bracket
+GC disabled, aborting GC
+Allocating a BLOCK: Now have 39 objects
+Top of Outer loop
+Allocating a LINE: Now have 40 objects
+Top of Inner loop
+Normal symbol: Square
+Allocating a SYMBOL: Now have 41 objects
+Allocating a LINE: Now have 42 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 43 objects
+Top of Inner loop
+Semicolon
+Top of Outer loop
+Allocating a LINE: Now have 44 objects
+Top of Inner loop
+Normal symbol: Print
+Allocating a SYMBOL: Now have 45 objects
+Allocating a LINE: Now have 46 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 47 objects
+Top of Inner loop
+Normal symbol: Fibbonaci
+Allocating a SYMBOL: Now have 48 objects
+Allocating a LINE: Now have 49 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 50 objects
+Top of Inner loop
+Semicolon
+Top of Outer loop
+Allocating a LINE: Now have 51 objects
+Top of Inner loop
+Hit Stop, returning
+Bottom of outer loop
+Allocating a BLOCK: Now have 52 objects
+Top of Inner loop
+Semicolon
+Top of Outer loop
+Allocating a LINE: Now have 53 objects
+Top of Inner loop
+Normal symbol: Prints
+Allocating a SYMBOL: Now have 54 objects
+Allocating a LINE: Now have 55 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 56 objects
+Top of Inner loop
+Bracket
+GC disabled, aborting GC
+Allocating a BLOCK: Now have 57 objects
+Top of Outer loop
+Allocating a LINE: Now have 58 objects
+Top of Inner loop
+String: DONE!!
+Allocating a STRING: Now have 59 objects
+Allocating a LINE: Now have 60 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 61 objects
+Top of Inner loop
+Number: 123
+Allocating a NUMBER: Now have 62 objects
+Allocating a LINE: Now have 63 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 64 objects
+Top of Inner loop
+Number: inf
+Allocating a LINE: Now have 65 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 66 objects
+Top of Inner loop
+Number: inf
+Allocating a LINE: Now have 67 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 68 objects
+Top of Inner loop
+Number: nan
+Allocating a NUMBER: Now have 69 objects
+Allocating a LINE: Now have 70 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 71 objects
+Top of Inner loop
+UNDEFINED literal
+Allocating a SINGLETON: Now have 72 objects
+Allocating a LINE: Now have 73 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 74 objects
+Top of Inner loop
+DNE literal
+Allocating a SINGLETON: Now have 75 objects
+Allocating a LINE: Now have 76 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 77 objects
+Top of Inner loop
+FALSE literal
+Allocating a SINGLETON: Now have 78 objects
+Allocating a LINE: Now have 79 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 80 objects
+Top of Inner loop
+TRUE literal
+Allocating a SINGLETON: Now have 81 objects
+Allocating a LINE: Now have 82 objects
+Bottom of outer loop
+Allocating a BLOCK: Now have 83 objects
+Top of Inner loop
+Hit Stop, returning
+Bottom of outer loop
+Allocating a BLOCK: Now have 84 objects
+Top of Inner loop
+Hit Stop, returning
+Finished compile, running a BLOCK
+Entering evaluator
+Marking a BLOCK
+Marking a LINE
+Marking a SYMBOL
+Marking a LINE
+Marking a SYMBOL
+Marking a LINE
+Marking a NUMBER
+Marking a LINE
+Marking a NUMBER
+Marking a LINE
+Marking a SYMBOL
+Marking a LINE
+Marking a NUMBER
+Marking NULL
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking a BLOCK
+Marking a LINE
+Marking a SYMBOL
+Marking NULL
+Marking a BLOCK
+Marking a LINE
+Already marked, returning
+Marking NULL
+Marking a SCOPE
+Marking a CNFUNCTION
+Marking NULL
+Marking NULL
+Entering GC
+Marking a LIST
+Marking a STRING
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking a LIST
+Marking a STRING
+Already marked, returning
+Marking a LIST
+Marking a NUMBER
+Marking NULL
+Marking NULL
+Marking a SCOPE
+Already marked, returning
+Marking GC_STACK
+Marking NULL
+Done marking GC_STACK
+Marking NULL
+Skipping marked BLOCK
+Freeing a BLOCK, Next a LINE: Now have 83 objects
+Freeing a LINE, Next a SINGLETON: Now have 82 objects
+Freeing a SINGLETON singleton-> 0, Next a BLOCK: Now have 81 objects
+Freeing a BLOCK, Next a LINE: Now have 80 objects
+Freeing a LINE, Next a SINGLETON: Now have 79 objects
+Freeing a SINGLETON singleton-> 1, Next a BLOCK: Now have 78 objects
+Freeing a BLOCK, Next a LINE: Now have 77 objects
+Freeing a LINE, Next a SINGLETON: Now have 76 objects
+Freeing a SINGLETON singleton-> 3, Next a BLOCK: Now have 75 objects
+Freeing a BLOCK, Next a LINE: Now have 74 objects
+Freeing a LINE, Next a SINGLETON: Now have 73 objects
+Freeing a SINGLETON singleton-> 2, Next a BLOCK: Now have 72 objects
+Freeing a BLOCK, Next a LINE: Now have 71 objects
+Freeing a LINE, Next a NUMBER: Now have 70 objects
+Freeing a NUMBER number-> nan, Next a BLOCK: Now have 69 objects
+Freeing a BLOCK, Next a LINE: Now have 68 objects
+Freeing a LINE, Next a BLOCK: Now have 67 objects
+Freeing a BLOCK, Next a LINE: Now have 66 objects
+Freeing a LINE, Next a BLOCK: Now have 65 objects
+Freeing a BLOCK, Next a LINE: Now have 64 objects
+Freeing a LINE, Next a NUMBER: Now have 63 objects
+Freeing a NUMBER number-> 123, Next a BLOCK: Now have 62 objects
+Freeing a BLOCK, Next a LINE: Now have 61 objects
+Freeing a LINE, Next a STRING: Now have 60 objects
+Freeing a STRING name-> "DONE!!", Next a LINE: Now have 59 objects
+Freeing a LINE, Next a BLOCK: Now have 58 objects
+Freeing a BLOCK, Next a BLOCK: Now have 57 objects
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked SYMBOL
+Freeing a LINE, Next a BLOCK: Now have 56 objects
+Skipping marked BLOCK
+Freeing a LINE, Next a BLOCK: Now have 55 objects
+Freeing a BLOCK, Next a LINE: Now have 54 objects
+Freeing a LINE, Next a SYMBOL: Now have 53 objects
+Freeing a SYMBOL name-> "Fibbonaci", Next a BLOCK: Now have 52 objects
+Freeing a BLOCK, Next a LINE: Now have 51 objects
+Freeing a LINE, Next a SYMBOL: Now have 50 objects
+Freeing a SYMBOL name-> "Print", Next a LINE: Now have 49 objects
+Freeing a LINE, Next a BLOCK: Now have 48 objects
+Freeing a BLOCK, Next a LINE: Now have 47 objects
+Freeing a LINE, Next a SYMBOL: Now have 46 objects
+Freeing a SYMBOL name-> "Square", Next a LINE: Now have 45 objects
+Freeing a LINE, Next a BLOCK: Now have 44 objects
+Freeing a BLOCK, Next a BLOCK: Now have 43 objects
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked NUMBER
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked SYMBOL
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked NUMBER
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked NUMBER
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked SYMBOL
+Skipping marked BLOCK
+Skipping marked LINE
+Skipping marked SYMBOL
+Freeing a LINE, Next a BLOCK: Now have 42 objects
+Freeing a BLOCK, Next a CNFUNCTION: Now have 41 objects
+Skipping marked CNFUNCTION
+Skipping marked SCOPE
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+Skipping marked STRING
+Skipping marked LIST
+Skipping marked NUMBER
+Skipping marked LIST
+GC done, freed 43 objects
+Allocating a LIST: Now have 42 objects
+Allocating a LIST: Now have 43 objects
+Reversing a line
+Allocating a LIST: Now have 44 objects
+Allocating a LIST: Now have 45 objects
+Allocating a LIST: Now have 46 objects
+Allocating a LIST: Now have 47 objects
+Allocating a LIST: Now have 48 objects
+Allocating a LIST: Now have 49 objects
+Done reversing a line
+Allocating a LIST: Now have 50 objects
+Pushing a NUMBER
+Allocating a LIST: Now have 51 objects
+Allocating a STRING: Now have 52 objects
+Leaving evaluator in error state
+
+
 -----tests complete----
 
 Entering GC
@@ -519,6 +905,40 @@ Marking GC_STACK
 Marking NULL
 Done marking GC_STACK
 Marking NULL
+Freeing a STRING name-> "undefined: -step", Next a LIST: Now have 51 objects
+Freeing a LIST, Next a LIST: Now have 50 objects
+Freeing a LIST, Next a LIST: Now have 49 objects
+Freeing a LIST, Next a LIST: Now have 48 objects
+Freeing a LIST, Next a LIST: Now have 47 objects
+Freeing a LIST, Next a LIST: Now have 46 objects
+Freeing a LIST, Next a LIST: Now have 45 objects
+Freeing a LIST, Next a LIST: Now have 44 objects
+Freeing a LIST, Next a LIST: Now have 43 objects
+Freeing a LIST, Next a LIST: Now have 42 objects
+Freeing a LIST, Next a BLOCK: Now have 41 objects
+Freeing a BLOCK, Next a BLOCK: Now have 40 objects
+Freeing a BLOCK, Next a LINE: Now have 39 objects
+Freeing a LINE, Next a SYMBOL: Now have 38 objects
+Freeing a SYMBOL name-> "Prints", Next a BLOCK: Now have 37 objects
+Freeing a BLOCK, Next a BLOCK: Now have 36 objects
+Freeing a BLOCK, Next a LINE: Now have 35 objects
+Freeing a LINE, Next a NUMBER: Now have 34 objects
+Freeing a NUMBER number-> 3, Next a BLOCK: Now have 33 objects
+Freeing a BLOCK, Next a LINE: Now have 32 objects
+Freeing a LINE, Next a SYMBOL: Now have 31 objects
+Freeing a SYMBOL name-> "-step", Next a BLOCK: Now have 30 objects
+Freeing a BLOCK, Next a LINE: Now have 29 objects
+Freeing a LINE, Next a NUMBER: Now have 28 objects
+Freeing a NUMBER number-> 10, Next a BLOCK: Now have 27 objects
+Freeing a BLOCK, Next a LINE: Now have 26 objects
+Freeing a LINE, Next a NUMBER: Now have 25 objects
+Freeing a NUMBER number-> 1, Next a BLOCK: Now have 24 objects
+Freeing a BLOCK, Next a LINE: Now have 23 objects
+Freeing a LINE, Next a SYMBOL: Now have 22 objects
+Freeing a SYMBOL name-> "Range", Next a BLOCK: Now have 21 objects
+Freeing a BLOCK, Next a LINE: Now have 20 objects
+Freeing a LINE, Next a SYMBOL: Now have 19 objects
+Freeing a SYMBOL name-> "For", Next a CNFUNCTION: Now have 18 objects
 Freeing a CNFUNCTION name-> "MyFunction", Next a SCOPE: Now have 17 objects
 Freeing a SCOPE, Next a LIST: Now have 16 objects
 Freeing a LIST, Next a NUMBER: Now have 15 objects
@@ -537,4 +957,4 @@ Freeing a STRING name-> "Foo123", Next a LIST: Now have 3 objects
 Freeing a LIST, Next a NUMBER: Now have 2 objects
 Freeing a NUMBER number-> 1.7e+123, Next a LIST: Now have 1 objects
 Freeing a LIST, No next: Now have 0 objects
-GC done, freed 18 objects
+GC done, freed 52 objects
