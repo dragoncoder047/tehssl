@@ -1,6 +1,27 @@
-tehssl.cpp:115:9: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
-  115 |         };
-      |         ^
+tehssl.cpp:92:16: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
+   92 |         struct {
+      |                ^
+tehssl.cpp: In function ‘void tehssl_sweep(tehssl_vm_t)’:
+tehssl.cpp:363:34: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
+  363 |             printf(": Now have %lu objects\n", vm->num_objects - 1);
+      |                                ~~^             ~~~~~~~~~~~~~~~~~~~
+      |                                  |                             |
+      |                                  long unsigned int             size_t {aka unsigned int}
+      |                                %u
+tehssl.cpp: In function ‘char* tehssl_next_token(FILE*)’:
+tehssl.cpp:650:42: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  650 |         if (comment && (ch == '\n' || ch == EOF)) comment = false;
+      |                                          ^
+tehssl.cpp:651:49: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  651 |         else if (informal && (isspace(ch) || ch == EOF)) informal = false;
+      |                                                 ^
+tehssl.cpp:670:12: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  670 |     if (ch == EOF) {
+      |            ^
+tehssl.cpp: In function ‘tehssl_object* tehssl_compile_until(tehssl_vm_t, FILE*, char)’:
+tehssl.cpp:744:45: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  744 |             if ((strlen(token) == 0 && stop == EOF) || token[0] == stop) {
+      |                                             ^
 tehssl.cpp: In function ‘void tehssl_init_builtins(tehssl_vm_t)’:
 tehssl.cpp:967:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
   967 | void tehssl_init_builtins(tehssl_vm_t vm) {
@@ -28,6 +49,18 @@ tehssl.cpp:410:110: note: in definition of macro ‘tehssl_push_t’
 tehssl.cpp:986:9: note: in expansion of macro ‘tehssl_push’
   986 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
       |         ^~~~~~~~~~~
+tehssl.cpp:989:15: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
+  989 |     printf("%lu objects\n", vm->num_objects);
+      |             ~~^             ~~~~~~~~~~~~~~~
+      |               |                 |
+      |               long unsigned int size_t {aka unsigned int}
+      |             %u
+tehssl.cpp:991:15: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
+  991 |     printf("%lu objects after gc\n", vm->num_objects);
+      |             ~~^                      ~~~~~~~~~~~~~~~
+      |               |                          |
+      |               long unsigned int          size_t {aka unsigned int}
+      |             %u
 tehssl.cpp:1027:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
  1027 |     tehssl_make_stream(vm, "stringstream", s);
       |                            ^~~~~~~~~~~~~~
