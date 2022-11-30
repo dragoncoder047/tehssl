@@ -24,42 +24,42 @@ enum tehssl_status {
 };
 
 enum tehssl_flag {
-    GC_MARK,
-    PRINTER_MARK,
-    LITERAL_SYMBOL
+    GC_MARK_TEMP,
+    GC_MARK_PERM,
+    PR_MARK,
+    VARIABLE,
+    MACRO_FUNCTION
+};
+
+enum tehssl_symbol_type {
+    NORMAL,
+    LITERAL,
+    KEYWORD_ADD,
+    KEYWORD_LOOK,
+    KEYWORD_POP,
+    KEYWORD_FLAG
 };
 
 // Different types
 enum tehssl_typeid {
-//  Type      Cell--> A            B            C
-    LIST,        //                (value)      (next)
-    DICT,        //   (key)        (value)      (next)
-    LINE,        //                (item)       (next)
-    BLOCK,       //                (code)       (next)
+//  Type      Cell--> A            B
+    CONS,        //   (value)      (next)
+    LINE,        //   (item)       (next)
+    BLOCK,       //   (code)       (next)
     CLOSURE,     //   (scope)      (block)
-    NUMBER,      //   double
-    SINGLETON,   //   int32_t
-    SYMBOL,      //   char*
+    FLOAT,       //   double
+    INT,         //   int64_t
+    SINGLETON,   //   int
+    SYMBOL,      //   char*        flags
     STRING,      //   char*
     STREAM,      //   char*        FILE*
-    USERTYPE,    //   char*        (ptr1)       (ptr2)
     // Special internal types
-    SCOPE,       //                (bindings)   (parent)
-    UNFUNCTION,  //   char*        (block)      (next)
-    CNFUNCTION,  //   char*        fun_t        (next)
-    CMFUNCTION,  //   char*        macfun_t     (next)
-    TFUNCTION,   //   char*        typefun_t    (next)
-    VARIABLE     //   char*        (value)      (next)
+    SCOPE,       //   (bindings)   (parent)
+    NAME,        //   char*        (value)
+    FUNCTION     //   (value)      flags
+    // USERTYPE
 };
 // N.B. the char* pointers are "owned" by the object and MUST be strcpy()'d if the object is duplicated.
-
-enum tehssl_type_action {
-    CTYPE_INIT,
-    CTYPE_PRINT,
-    CTYPE_MARK,
-    CTYPE_COMPARE,
-    CTYPE_DESTROY
-};
 
 enum tehssl_singleton {
     TRUE,
@@ -72,13 +72,11 @@ enum tehssl_singleton {
 typedef enum tehssl_typeid tehssl_typeid_t;
 typedef enum tehssl_flag tehssl_flag_t;
 typedef enum tehssl_status tehssl_status_t;
-typedef enum tehssl_type_action tehssl_type_action_t;
 typedef enum tehssl_singleton tehssl_singleton_t;
+typedef enum tehssl_symbol_type tehssl_symbol_type_t;
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
 typedef void (*tehssl_fun_t)(tehssl_vm_t, tehssl_object_t);
-typedef void (*tehssl_macfun_t)(tehssl_vm_t, tehssl_object_t*, FILE*);
-typedef int (*tehssl_typefun_t)(tehssl_vm_t, tehssl_type_action_t, tehssl_object_t, void*);
 typedef uint16_t tehssl_flags_t;
 
 // Main OBJECT type
@@ -87,30 +85,24 @@ struct tehssl_object {
     tehssl_flags_t flags;
     tehssl_object_t next_object;
     union {
-        double number;
+        double float_number;
+        int64_t int_number;
         tehssl_singleton_t singleton;
         struct {
             union {
-                tehssl_object_t key;
+                tehssl_object_t car;
+                tehssl_object_t value;
                 tehssl_object_t scope;
-                char* name;
+                char* chars;
             };
             union {
-                tehssl_object_t value;
-                tehssl_object_t item;
+                tehssl_object_t cdr;
+                tehssl_object_t next;
                 tehssl_object_t code;
-                tehssl_object_t bindings;
-                tehssl_object_t block;
-                tehssl_object_t ptr1;
                 FILE* file;
                 tehssl_fun_t c_function;
-                tehssl_typefun_t type_function;
-                tehssl_macfun_t macro_function;
-            };
-            union {
-                tehssl_object_t next;
-                tehssl_object_t parent;
-                tehssl_object_t ptr2;
+                tehssl_symbol_type_t symboltype;
+                bool is_user_function;
             };
         };
     };
@@ -127,7 +119,6 @@ struct tehssl_vm {
     tehssl_object_t type_functions;
     size_t num_objects;
     size_t next_gc;
-    char last_char;
     bool enable_gc;
 };
 
@@ -138,57 +129,39 @@ bool tehssl_test_flag(tehssl_object_t object, tehssl_flag_t f);
 #ifdef TEHSSL_DEBUG
 void debug_print_type(tehssl_typeid_t t) {
     switch (t) {
-        case LIST: printf("LIST"); break;
-        case DICT: printf("DICT"); break;
+        case CONS: printf("CONS"); break;
         case LINE: printf("LINE"); break;
         case BLOCK: printf("BLOCK"); break;
         case CLOSURE: printf("CLOSURE"); break;
-        case NUMBER: printf("NUMBER"); break;
+        case FLOAT: printf("FLOAT"); break;
+        case INT: printf("INT"); break;
         case SINGLETON: printf("SINGLETON"); break;
         case SYMBOL: printf("SYMBOL"); break;
         case STRING: printf("STRING"); break;
         case STREAM: printf("STREAM"); break;
-        case USERTYPE: printf("USERTYPE"); break;
         case SCOPE: printf("SCOPE"); break;
-        case UNFUNCTION: printf("UNFUNCTION"); break;
-        case CNFUNCTION: printf("CNFUNCTION"); break;
-        case CMFUNCTION: printf("CMFUNCTION"); break;
-        case TFUNCTION: printf("TFUNCTION"); break;
-        case VARIABLE: printf("VARIABLE"); break;
+        case NAME: printf("NAME"); break;
+        case FUNCTION: printf("FUNCTION"); break;
     }
 }
 #endif
 
-inline bool tehssl_has_name(tehssl_object_t object) {
-    if (object == NULL) return false;
-    switch (object->type) {
+inline uint8_t tehssl_get_cell_info(tehssl_object_t obj) {
+    if (obj == NULL) return 0;
+    switch (t) {
+        case CONS:
+        case LINE:
+        case BLOCK: 
+        case CLOSURE: return 0b011;
+        case FLOAT:
+        case INT: 
+        case SINGLETON: return 0b000;
         case SYMBOL:
         case STRING:
-        case STREAM:
-        case USERTYPE:
-        case UNFUNCTION:
-        case CNFUNCTION:
-        case VARIABLE:
-            return true;
-        default:
-            return false;
-    }
-}
-
-inline bool tehssl_is_literal(tehssl_object_t object) {
-    if (object == NULL) return true;
-    switch (object->type) {
-        case SYMBOL:
-            return tehssl_test_flag(object, LITERAL_SYMBOL);
-        case LIST:
-        case DICT:
-        case SINGLETON:
-        case STRING:
-        case STREAM:
-        case NUMBER:
-            return true;
-        default:
-            return false;
+        case STREAM: return 0b100;
+        case SCOPE: return 0b011;
+        case NAME: return 0b101;
+        case FUNCTION: return obj->is_user_function ? 0b010 : 0b000;
     }
 }
 
@@ -234,16 +207,7 @@ tehssl_object_t tehssl_alloc(tehssl_vm_t vm, tehssl_typeid_t type) {
 }
 
 // Garbage collection
-tehssl_object_t tehssl_get_type_handle(tehssl_vm_t vm, char* type) {
-    tehssl_object_t type_handle = vm->type_functions;
-    while (type_handle != NULL) {
-        if (strcmp(type, type_handle->name) == 0) break;
-        type_handle = type_handle->next;
-    }
-    return type_handle;
-}
-
-void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
+void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object, tehssl_flag_t flag = GC_MARK_TEMP) {
     MARK:
     // already marked? abort
     if (object == NULL) {
@@ -255,53 +219,18 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object) {
     #ifdef TEHSSL_DEBUG
     printf("Marking a "); debug_print_type(object->type); putchar('\n');
     #endif
-    if (tehssl_test_flag(object, GC_MARK)) {
+    if (tehssl_test_flag(object, flag)) {
         #ifdef TEHSSL_DEBUG
-        printf("Already marked, returning\n");
+        printf("Already marked %i, returning\n" flag);
         #endif
         return;
     }
-    tehssl_set_flag(object, GC_MARK);
-    switch (object->type) {
-        case DICT:
-            tehssl_markobject(vm, object->key);
-            // fallthrough
-        case BLOCK:
-        case LIST:
-        case LINE:
-        case SCOPE:
-            tehssl_markobject(vm, object->value);
-            object = object->next;
-            goto MARK;
-        case NUMBER:
-        case SINGLETON:
-        case SYMBOL:
-        case STRING:
-        case STREAM:
-            break; // noop
-        case CLOSURE:
-            tehssl_markobject(vm, object->key);
-            tehssl_markobject(vm, object->value);
-            break;
-        case UNFUNCTION:
-        case VARIABLE:
-            tehssl_markobject(vm, object->value);
-            // fallthrough
-        case CNFUNCTION:
-        case CMFUNCTION:
-        case TFUNCTION:
-            object = object->next;
-            goto MARK;
-        case USERTYPE:
-            // find type handle function
-            tehssl_object_t type_handle = tehssl_get_type_handle(vm, object->name);
-            if (type_handle == NULL) {
-                #ifdef TEHSSL_DEBUG
-                printf("\nWARNING: marking a custom type '%s' with no registered handler function... may cause dangling pointers\n", object->name);
-                #endif
-            } else {
-                type_handle->type_function(vm, CTYPE_MARK, object, NULL);
-            }
+    tehssl_set_flag(object, flag);
+    uint8_t usage = tehssl_get_cell_info(object);
+    if (usage & 0b010) tehssl_markobject(vm, object->car, flag);
+    if (usage & 0b001) {
+        object = object->cdr;
+        goto MARK;
     }
 }
 
@@ -322,7 +251,7 @@ void tehssl_markall(tehssl_vm_t vm) {
 void tehssl_sweep(tehssl_vm_t vm) {
     tehssl_object_t* object = &vm->first_object;
     while (*object != NULL) {
-        if (!tehssl_test_flag(*object, GC_MARK)) {
+        if (!tehssl_test_flag(*object, GC_MARK_TEMP) && !tehssl_test_flag(*object, GC_MARK_PERM)) {
             tehssl_object_t unreached = *object;
             *object = unreached->next_object;
             #ifdef TEHSSL_DEBUG
@@ -335,28 +264,15 @@ void tehssl_sweep(tehssl_vm_t vm) {
                 if (unreached->file != NULL) fclose(unreached->file);
                 unreached->file = NULL;
             }
-            else if (unreached->type == USERTYPE) {
-                // find type handle function
-                tehssl_object_t type_handle = tehssl_get_type_handle(vm, unreached->name);
-                if (type_handle == NULL) {
-                    #ifdef TEHSSL_DEBUG
-                    printf("\nWARNING: freeing a custom type '%s' with no registered handler function... may cause memory leaks\n", unreached->name);
-                    #endif
-                } else {
-                    free(unreached->name);
-                    unreached->name = NULL;
-                    type_handle->type_function(vm, CTYPE_DESTROY, unreached, NULL);
-                }
-            }
-            if (tehssl_has_name(unreached)) {
+            if (tehssl_get_cell_info(unreached) & 0b100) {
                 #ifdef TEHSSL_DEBUG
-                printf(" name-> \"%s\"", unreached->name);
+                printf(" name-> \"%s\"", unreached->chars);
                 #endif
-                free(unreached->name);
-                unreached->name = NULL;
+                free(unreached->chars);
+                unreached->chars = NULL;
             }
             #ifdef TEHSSL_DEBUG
-            if (unreached->type == NUMBER) printf(" number-> %g", unreached->number);
+            if (unreached->type == FLOAT) printf(" number-> %g", unreached->float_number);
             if (unreached->type == SINGLETON) printf(" singleton-> %i", unreached->singleton);
             if (*object == NULL) printf(", No next");
             else { printf(", Next a "); debug_print_type((*object)->type); }
@@ -368,7 +284,7 @@ void tehssl_sweep(tehssl_vm_t vm) {
             #ifdef TEHSSL_DEBUG
             printf("Skipping marked "); debug_print_type((*object)->type); putchar('\n');
             #endif
-            tehssl_clear_flag(*object, GC_MARK);
+            tehssl_clear_flag(*object, GC_MARK_TEMP);
             object = &(*object)->next_object;
         }
     }
@@ -415,11 +331,11 @@ void tehssl_destroy(tehssl_vm_t vm) {
 tehssl_object_t tehssl_make_string(tehssl_vm_t vm, char* string) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
-        if (object->type == STRING && strcmp(object->name, string) == 0) return object;
+        if (object->type == STRING && strcmp(object->chars, string) == 0) return object;
         object = object->next_object;
     }
     tehssl_object_t sobj = tehssl_alloc(vm, STRING);
-    sobj->name = strdup(string);
+    sobj->chars = strdup(string);
     return sobj;
 }
 
@@ -428,23 +344,23 @@ tehssl_object_t tehssl_make_string(tehssl_vm_t vm, char* string) {
 tehssl_object_t tehssl_make_symbol(tehssl_vm_t vm, char* name, bool is_literal) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
-        if (object->type == SYMBOL && strcmp(object->name, name) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
+        if (object->type == SYMBOL && strcmp(object->chars, name) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
         object = object->next_object;
     }
     tehssl_object_t sobj = tehssl_alloc(vm, SYMBOL);
-    sobj->name = strdup(name);
+    sobj->chars = strdup(name);
     if (is_literal) tehssl_set_flag(sobj, LITERAL_SYMBOL);
     return sobj;
 }
 
-tehssl_object_t tehssl_make_number(tehssl_vm_t vm, double n) {
+tehssl_object_t tehssl_make_float(tehssl_vm_t vm, double n) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
-        if (object->type == NUMBER && (uint64_t)n == (uint64_t)object->number) return object;
+        if (object->type == FLOAT && (uint64_t)n == (uint64_t)object->float_number) return object;
         object = object->next_object;
     }
-    tehssl_object_t sobj = tehssl_alloc(vm, NUMBER);
-    sobj->number = n;
+    tehssl_object_t sobj = tehssl_alloc(vm, FLOAT);
+    sobj->float_number = n;
     return sobj;
 }
 
@@ -461,22 +377,9 @@ tehssl_object_t tehssl_make_singleton(tehssl_vm_t vm, tehssl_singleton_t s) {
 
 tehssl_object_t tehssl_make_stream(tehssl_vm_t vm, char* name, FILE* file) {
     tehssl_object_t sobj = tehssl_alloc(vm, STREAM);
-    sobj->name = strdup(name);
+    sobj->chars = strdup(name);
     sobj->file = file;
     return sobj;
-}
-
-tehssl_object_t tehssl_make_custom(tehssl_vm_t vm, char* type, void* data) {
-    tehssl_object_t obj = tehssl_alloc(vm, USERTYPE);
-    obj->name = strdup(type);
-    tehssl_object_t type_handle = tehssl_get_type_handle(vm, type);
-    if (type_handle == NULL) {
-        #ifdef TEHSSL_DEBUG
-        printf("\nWARNING: allocating a custom type '%s' with no registered type function\n", type);
-        #endif
-    }
-    else type_handle->type_function(vm, CTYPE_INIT, obj, data);
-    return obj;
 }
 
 // Lookup values in scope
@@ -492,7 +395,7 @@ tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t what) {
         if (what == FUN && result->type != UNFUNCTION && result->type != CNFUNCTION) goto NEXT;
         if (what == VAR && result->type != VARIABLE) goto NEXT;
         if (what == MACRO && result->type != CMFUNCTION) goto NEXT;
-        if (strcmp(result->name, name) == 0) return result;
+        if (strcmp(result->chars, name) == 0) return result;
         NEXT:
         result = result->next;
     }
@@ -510,7 +413,7 @@ void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
     char* buf;
     asprintf(&buf, "%s: %s", message, detail);
     vm->return_value = tehssl_alloc(vm, STRING);
-    vm->return_value->name = buf;
+    vm->return_value->chars = buf;
     vm->status = ERROR;
 }
 
@@ -521,58 +424,20 @@ void tehssl_error(tehssl_vm_t vm, const char* message, char* detail) {
 #define ERR(vm, msg) do { tehssl_error(vm, (msg)); return; } while (false) 
 #define ERR2(vm, msg, detail) do { tehssl_error(vm, (msg), (detail)); return; } while (false)
 
-bool tehssl_compare_numbers(double a, double b, bool lt, bool eq, bool gt) {
-    if (a < b) return lt;
-    if (a == b) return eq;
-    if (a > b) return gt;
-    return false; // unreachable, just to satisfy compiler
-}
-
-bool tehssl_compare_strings(char* a, char* b, bool lt, bool eq, bool gt) {
-    int r = strcmp(a, b);
-    if (r < 0) return lt;
-    if (r == 0) return eq;
-    if (r > 0) return gt;
-    return false; // unreachable, just to satisfy compiler
-}
-
-bool tehssl_equal(tehssl_vm_t vm, tehssl_object_t a, tehssl_object_t b) {
+bool tehssl_equal(tehssl_object_t a, tehssl_object_t b) {
     CMP:
     if (a == b) return true; // Same object
     if (a == NULL || b == NULL) return false; // Null
     if (a->type != b->type) return false; // Different type
-    switch (a->type) {
-        case DICT:
-            if (!tehssl_equal(vm, a->key, b->key)) return false;
-            // fallthrough
-        case LIST:
-        case LINE:
-            if (!tehssl_equal(vm, a->value, b->value)) return false;
-            a = a->next;
-            b = b->next;
-            goto CMP;
-        case NUMBER:
-            return tehssl_compare_numbers(a->number, b->number, false, true, false);
-        case SINGLETON:
-            return a->singleton == b->singleton;
-        case SYMBOL:
-        case STRING:
-        case STREAM:
-            return tehssl_compare_strings(a->name, b->name, false, true, false);
-        case USERTYPE: {
-            if (strcmp(a->name, b->name) != 0) return false;
-            tehssl_object_t type_handle = tehssl_get_type_handle(vm, a->name);
-            if (type_handle == NULL) {
-                #ifdef TEHSSL_DEBUG
-                printf("\nWARNING: comparing a custom type '%s' with no registered type function\n", a->name);
-                #endif
-                return true;
-            }
-            return type_handle->type_function(vm, CTYPE_COMPARE, a, (void*)b) == 0;
-        }
-        default:
-            return false;
+    uint8_t info = tehssl_get_cell_info(a);
+    if (info & 0b100 && strcmp(a->chars, b->chars) != 0) return false;
+    if (info & 0b010 && !tehssl_equal(a->car, b->car)) return false;
+    if (info & 0b001) {
+        a = a->cdr;
+        b = b->cdr;
+        goto CMP;
     }
+    return true;
 }
 
 int tehssl_list_length(tehssl_object_t list) {
@@ -604,28 +469,6 @@ void tehssl_list_set(tehssl_object_t list, int i, tehssl_object_t new_value) {
         list = list->next;
     }
     if (list != NULL) list->value = new_value;
-}
-
-tehssl_object_t tehssl_dict_get(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key) {
-    while (dict != NULL) {
-        if (tehssl_equal(vm, dict->key, key)) break;
-        dict = dict->next;
-    }
-    if (dict == NULL) return NULL;
-    return dict->value;
-}
-
-void tehssl_dict_set(tehssl_vm_t vm, tehssl_object_t dict, tehssl_object_t key, tehssl_object_t new_value) {
-    while (true) {
-        if (tehssl_equal(vm, dict->key, key)) break;
-        if (dict->next == NULL) { // Exhausted all entries
-            tehssl_object_t newentry = tehssl_alloc(vm, DICT);
-            newentry->key = key;
-            dict->next = newentry;
-        }
-        dict = dict->next;
-    }
-    dict->value = new_value;
 }
 
 // C functions
@@ -771,7 +614,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                     #ifdef TEHSSL_DEBUG
                     printf("Number: %g\n", num);
                     #endif
-                    item = tehssl_make_number(vm, num);
+                    item = tehssl_make_float(vm, num);
                 } else if (strcmp(token, "True") == 0) {
                     #ifdef TEHSSL_DEBUG
                     printf("TRUE literal\n");
@@ -887,8 +730,8 @@ void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
                     closure->scope = scope;
                     tehssl_push(vm, vm->stack, closure);
                 } else if (item->type == SYMBOL) {
-                    tehssl_object_t fun = tehssl_lookup(scope, item->name, FUN);
-                    tehssl_object_t var = tehssl_lookup(scope, item->name, VAR);
+                    tehssl_object_t fun = tehssl_lookup(scope, item->chars, FUN);
+                    tehssl_object_t var = tehssl_lookup(scope, item->chars, VAR);
                     if (var != NULL) {
                         tehssl_push(vm, vm->stack, var->value);
                     } else if (fun != NULL) {
@@ -900,7 +743,7 @@ void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
                             tehssl_eval(vm, fun->block, new_scope);
                         }
                     } else {
-                        tehssl_error(vm, "undefined", item->name);
+                        tehssl_error(vm, "undefined", item->chars);
                         tehssl_pop(vm->gc_stack);
                         goto DONE;
                     }
@@ -949,7 +792,7 @@ void tehssl_register_word(tehssl_vm_t vm, const char* name, tehssl_fun_t fun) {
         vm->global_scope = tehssl_alloc(vm, SCOPE);
     }
     tehssl_object_t fobj = tehssl_alloc(vm, CNFUNCTION);
-    fobj->name = strdup(name);
+    fobj->chars = strdup(name);
     fobj->c_function = fun;
     fobj->next = vm->global_scope->bindings;
     vm->global_scope->bindings = fobj;
@@ -958,7 +801,7 @@ void tehssl_register_word(tehssl_vm_t vm, const char* name, tehssl_fun_t fun) {
 // Register C types
 void tehssl_register_type(tehssl_vm_t vm, const char* name, tehssl_typefun_t fun) {
     tehssl_object_t t = tehssl_alloc(vm, TFUNCTION);
-    t->name = strdup(name);
+    t->chars = strdup(name);
     t->type_function = fun;
     t->next = vm->type_functions;
     vm->type_functions = t;
@@ -977,12 +820,12 @@ int main(int argc, char* argv[]) {
     printf("\n\n-----test 1: garbage collector----\n\n");
     // Make some garbage
     for (int i = 0; i < 5; i++) {
-        tehssl_make_number(vm, 123);
-        tehssl_make_number(vm, 456.789123);
+        tehssl_make_float(vm, 123);
+        tehssl_make_float(vm, 456.789123);
         tehssl_make_string(vm, "i am cow hear me moo");
         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
         // This is not garbage, it is on the stack now
-        tehssl_push(vm, vm->stack, tehssl_make_number(vm, 1.7E+123));
+        tehssl_push(vm, vm->stack, tehssl_make_float(vm, 1.7E+123));
         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
     }
     tehssl_register_word(vm, "MyFunction", myfunction);
