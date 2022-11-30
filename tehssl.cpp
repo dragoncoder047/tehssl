@@ -360,7 +360,7 @@ void tehssl_sweep(tehssl_vm_t vm) {
             if (unreached->type == SINGLETON) printf(" singleton-> %i", unreached->singleton);
             if (*object == NULL) printf(", No next");
             else { printf(", Next a "); debug_print_type((*object)->type); }
-            printf(": Now have %lu objects\n", vm->num_objects - 1);
+            printf(": Now have %u objects\n", vm->num_objects - 1);
             #endif
             free(unreached);
             vm->num_objects--;
@@ -986,9 +986,9 @@ int main(int argc, char* argv[]) {
         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
     }
     tehssl_register_word(vm, "MyFunction", myfunction);
-    printf("%lu objects\n", vm->num_objects);
+    printf("%u objects\n", vm->num_objects);
     tehssl_gc(vm);
-    printf("%lu objects after gc\n", vm->num_objects);
+    printf("%u objects after gc\n", vm->num_objects);
 
     printf("\n\n-----test 2: tokenizer----\n\n");
     FILE* s = fmemopen((void*)str, strlen(str), "r");
