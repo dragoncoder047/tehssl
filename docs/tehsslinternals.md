@@ -1,38 +1,45 @@
 # TEHSSL Internals
 
+This is a little ahead of what's actually implemented...
+
 ## Object Representations
 
-Lisp historically used a 2-cell "cons" pair for its objects, representing other types with special invalid pointer values.
+### Primitives
 
-TEHSSL has a few more requirements that that, so it uses 5 cells' worth for each object. Here are how the cells are used:
+Lisp -- specifically [uLisp](http://www.ulisp.com/) -- uses a 2-cell "cons" pair for its objects, putting either two pointers for a cons, and representing other types with special invalid pointer values in the "car" cell. The lower bit of the "car" cell is used as the garbage collector's mark bit.
+
+TEHSSL has a few more requirements that that (use of `malloc`/`free` instead of a Freelist, not have to be bit-aligned, etc.), so it uses 4 cells' worth for each object. Here are how the cells are used:
 
 1. Stores metadata like mark bits and the object's type.
 2. Always points to the next allocated object; used by the garbage collector. Inaccessible to the user.
-3. Usually points to a `char*` string, or a key or the upper bytes of a `double`.
-4. Usually points to the value, an object of interest depending on the type of the object.
-5. Usually points to the next item in the linked list or stack.
+3. Part of the object.
+4. Part of the object.
 
-Cells 3-5 change based on the object. Here are how all the types use them (may be out of date):
+Cells 3 and 4 change based on the object. Here are how all the types use them (may be out of date):
 
-| Type       | Cell 3                   | Cell 4                   | Cell 5             |
-|:---------- |:------------------------ |:------------------------ |:------------------ |
-| LIST       |                          | value                    | next item          |
-| DICT       | key                      | value                    | next entry         |
-| LINE       |                          | item                     | next thing in line |
-| BLOCK      |                          | code                     | next line          |
-| CLOSURE    | closed-over scope        | code block               |                    |
-| NUMBER     | `double` (upper 32 bits) | `double` (lower 32 bits) |                    |
-| SINGLETON  | singleton ID             |                          |                    |
-| SYMBOL     | `char*` name             |                          |                    |
-| STRING     | `char*` contents         |                          |                    |
-| STREAM     | `char*` id               | `FILE*`                  |                    |
-| USERTYPE   | `char*` typename         | any pointer              | any pointer        |
-| SCOPE      |                          | bindings list            | parent scope       |
-| UNFUNCTION | `char*` name             | function BLOCK           | next function      |
-| CNFUNCTION | `char*` name             | C function pointer       | next function      |
-| CMFUNCTION | `char*` name             | C macro function pointer | next macro         |
-| TFUNCTION  | `char*` type name        | C type function pointer  | next type function |
-| VARIABLE   | `char*` name             | value                    | next variable      |
+| Type                    | Cell 3                     | Cell 4                | Notes |
+|:----------------------- |:-------------------------- |:--------------------- |:----- |
+| CONS, LINE, BLOCK       | value                      | next                  | |
+| CLOSURE                 | closed-over scope          | code block            | |
+| FLOAT                   | `double` (spans two cells) |                       | |
+| INT                     | `int64_t`                  |                       | |
+| SINGLETON               | singleton ID               |                       | |
+| SYMBOL, STRING          | `char*` data               | flags                 | Flags on a symbol indicates what type of symbol (normal, literal, keyword, etc). |
+| STREAM                  | `char*` id                 | standard libc `FILE*` | |
+| NAME                    | `char*` name               | value                 | Has a flag to indicate if it's a variable. |
+| FUNCTION                | pointer to function        | flags                 | Flags indicate what kind of function (pointer to BLOCK, C function, macro, type-function, etc). |
+| USERTYPE                | `char*` typename           | any pointer           |
+
+### Complex Structures
+
+Of course, not every type can be implemented as a primitive.
+
+Here are some of the more complex types and how they are constructed:
+
+* **List**: a linked list of cons cells, as in Lisp.
+* **Dict / Map**: set up as a Lisp "assoc" list is, a list of cons pairs, with the key in cell 3 and the value in cell 4.
+* **Scope**: A list, where each element is a NAME object.
+* More to be added soon.
 
 ## Program Structure
 
@@ -41,11 +48,10 @@ The tokenizer first does the job of stripping comments and informal syntax. From
 1. If the current token is a `{`, recursively compile until a `}` and push that onto the line.
 2. If the current token is a `;`, push the current line onto the current block, and start a new line.
 3. Otherwise, it's a literal token.
-    1. If it's obviously a string (i.e. strats with `"`), make a STRING object.
+    1. If it's obviously a string (i.e. starts with `"`), make a STRING object.
     2. Use `sscanf()` to try to get a double out of it. If that succeeds, make it a NUMBER.
-    3. If it starts with a `:`, it's a literal symbol, make it a SYMBOL and **set** the LITERAL_SYMBOL flag.
-    4. If it's a symbol registered as a macro, pass the macro the stream and a pointer to the current line so it can operate on them.
-    5. Otherwise, it's a word symbol, make it a SYMBOL and **clear** the LITERAL_SYMBOL flag. (Note that keyword-symbols which start with `-` are not handled here; that's the evaluator's job.)
+    3. Check if it is one of the matching singletons. If it is, make the corresponding symbol object.
+    4. Otherwise, it's a symbol. If it starts with a character in `:-+&%`, set the appropriate flag.
 4. When the specified end-of-file marker is reached (EOF for top-level, `}` for recursive) return the current block.
 
 The resulting code structure is laid out like this:
@@ -92,13 +98,16 @@ Each of the `item` values can be a literal produced in step 3 above, or a sub-bl
 
 Coming from the compiler/reader is the tree described above, with special macros (such as `Def` and `Let`) already processed into their dynamic siblings. Executing a block of code (from the `root` node, above) proceeds as follows:
 
-1. The current line is nondestructively reversed. That way, the line doesn't have to be a doubly linked list or have a flag to note that it has already been reversed. I don't know how this hurts the garbage collector, however.
-2. The first element of the reversed line (really the last element of the line) is checked.
+1. An empty list is set up to be the "processed" line.
+2. The "unprocessed" line is scanned left-to-right.
+    1. If the item is not a symbol, it is simply pushed to the "processed" line.
+    2. If it is a symbol, and it is in the current scope as a macro, the macro's function is called with the remainder of the line. The return value of the macro call (i.e. the top stack value) is used as the unprocessed line.
+3. The first element of the "processed" line (really the last element of the line) is checked.
     1. If it is a string, number, literal symbol, etc. it is simply pushed to the stack.
-    2. If it is a word symbol (not a literal), it is looked up in first the variable and then the function namespaces. If both lookups fail, an appropriate error massage is returned. If not, a variable is pushed to the stack, and a function is called.
+    2. If it is a word symbol (not a keyword), it is looked up in the current scope and then the global scope. If the lookups fail, an appropriate error massage is returned. If not, a variable is pushed to the stack, and a function is called.
     3. If it is a sub-block, it is made into a CLOSURE with the current scope, and the closure is pushed to the stack.
-3. The next element of the line is tried as in step 2.
-4. When the line is exhausted, the next line is reversed, and run as before.
+4. The next element of the line is run as in step 3.
+5. When the line is exhausted, the next line is processed, and run as before.
 
 ## Keyword Arguments
 
