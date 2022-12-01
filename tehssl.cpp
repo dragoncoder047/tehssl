@@ -40,6 +40,14 @@ enum tehssl_symbol_type {
     KEYWORD_FLAG
 };
 
+enum tehssl_function_type {
+    NORMAL,
+    BUILTIN,
+    MACRO,
+    BUILTIN_MACRO,
+    TYPE_FUNCTION
+};
+
 // Different types
 enum tehssl_typeid {
 //  Type      Cell--> A            B
@@ -74,6 +82,7 @@ typedef enum tehssl_flag tehssl_flag_t;
 typedef enum tehssl_status tehssl_status_t;
 typedef enum tehssl_singleton tehssl_singleton_t;
 typedef enum tehssl_symbol_type tehssl_symbol_type_t;
+typedef enum tehssl_function_type tehssl_function_type_t;
 typedef struct tehssl_object *tehssl_object_t;
 typedef struct tehssl_vm *tehssl_vm_t;
 typedef void (*tehssl_fun_t)(tehssl_vm_t, tehssl_object_t);
@@ -98,11 +107,12 @@ struct tehssl_object {
             union {
                 tehssl_object_t cdr;
                 tehssl_object_t next;
+                tehssl_object_t parent;
                 tehssl_object_t code;
                 FILE* file;
                 tehssl_fun_t c_function;
                 tehssl_symbol_type_t symboltype;
-                bool is_user_function;
+                tehssl_function_type_t functiontype;
             };
         };
     };
@@ -124,7 +134,6 @@ struct tehssl_vm {
 
 // Forward references
 size_t tehssl_gc(tehssl_vm_t);
-bool tehssl_test_flag(tehssl_object_t object, tehssl_flag_t f);
 
 #ifdef TEHSSL_DEBUG
 void debug_print_type(tehssl_typeid_t t) {
@@ -148,7 +157,7 @@ void debug_print_type(tehssl_typeid_t t) {
 
 inline uint8_t tehssl_get_cell_info(tehssl_object_t obj) {
     if (obj == NULL) return 0;
-    switch (t) {
+    switch (obj->type) {
         case CONS:
         case LINE:
         case BLOCK: 
@@ -161,14 +170,14 @@ inline uint8_t tehssl_get_cell_info(tehssl_object_t obj) {
         case STREAM: return 0b100;
         case SCOPE: return 0b011;
         case NAME: return 0b101;
-        case FUNCTION: return obj->is_user_function ? 0b010 : 0b000;
+        case FUNCTION: return (obj->functiontype == NORMAL || obj->functiontype == MACRO) ? 0b010 : 0b000;
     }
 }
 
 // Flags test
-void tehssl_set_flag(tehssl_object_t object, tehssl_flag_t f) { object->flags |= (1 << f); }
-void tehssl_clear_flag(tehssl_object_t object, tehssl_flag_t f) { object->flags &= ~(1 << f); }
-bool tehssl_test_flag(tehssl_object_t object, tehssl_flag_t f) { return object->flags & (1 << f); }
+#define tehssl_set_flag(x, f) ((x)->flags |= (1 << (f)))
+#define tehssl_clear_flag(x, f) ((x)->flags &= ~(1 << (f)))
+#define tehssl_test_flag(x, f) ((x)->flags & (1 << (f)))
 
 // Alloc
 tehssl_vm_t tehssl_new_vm() {
@@ -221,7 +230,7 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object, tehssl_flag_t fla
     #endif
     if (tehssl_test_flag(object, flag)) {
         #ifdef TEHSSL_DEBUG
-        printf("Already marked %i, returning\n" flag);
+        printf("Already marked %i, returning\n", flag);
         #endif
         return;
     }
@@ -312,19 +321,17 @@ size_t tehssl_gc(tehssl_vm_t vm) {
 }
 
 void tehssl_destroy(tehssl_vm_t vm) {
-    vm->stack = NULL;
-    vm->return_value = NULL;
-    vm->global_scope = NULL;
-    vm->gc_stack = NULL;
-    vm->type_functions = NULL;
-    vm->enable_gc = true;
-    tehssl_gc(vm);
+    while (vm->first_object != NULL) {
+        tehssl_object_t o = vm->first_object;
+        vm->first_object = o->next_object;
+        free(o);
+    }
     free(vm);
 }
 
 // Push / Pop (for stacks)
 #define tehssl_push_t(vm, stack, item, t) do { tehssl_object_t cell = tehssl_alloc((vm), (t)); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
-#define tehssl_push(vm, stack, item) tehssl_push_t(vm, stack, item, LIST)
+#define tehssl_push(vm, stack, item) tehssl_push_t(vm, stack, item, CONS)
 #define tehssl_pop(stack) do { if ((stack) != NULL) (stack) = (stack)->next; } while (false)
 
 // Make objects
@@ -341,15 +348,15 @@ tehssl_object_t tehssl_make_string(tehssl_vm_t vm, char* string) {
 
 #define SYMBOL_LITERAL true
 #define SYMBOL_WORD false
-tehssl_object_t tehssl_make_symbol(tehssl_vm_t vm, char* name, bool is_literal) {
+tehssl_object_t tehssl_make_symbol(tehssl_vm_t vm, char* name, tehssl_symbol_type_t type) {
     tehssl_object_t object = vm->first_object;
     while (object != NULL) {
-        if (object->type == SYMBOL && strcmp(object->chars, name) == 0 && tehssl_test_flag(object, LITERAL_SYMBOL) == is_literal) return object;
+        if (object->type == SYMBOL && strcmp(object->chars, name) == 0 && object->symboltype == type) return object;
         object = object->next_object;
     }
     tehssl_object_t sobj = tehssl_alloc(vm, SYMBOL);
     sobj->chars = strdup(name);
-    if (is_literal) tehssl_set_flag(sobj, LITERAL_SYMBOL);
+    sobj->symboltype = type;
     return sobj;
 }
 
@@ -389,15 +396,17 @@ tehssl_object_t tehssl_make_stream(tehssl_vm_t vm, char* name, FILE* file) {
 tehssl_object_t tehssl_lookup(tehssl_object_t scope, char* name, uint8_t what) {
     LOOKUP:
     if (scope == NULL || scope->type != SCOPE) return NULL;
-    tehssl_object_t result = NULL;
-    result = scope->bindings;
-    while (result != NULL) {
-        if (what == FUN && result->type != UNFUNCTION && result->type != CNFUNCTION) goto NEXT;
-        if (what == VAR && result->type != VARIABLE) goto NEXT;
-        if (what == MACRO && result->type != CMFUNCTION) goto NEXT;
-        if (strcmp(result->chars, name) == 0) return result;
+    tehssl_object_t name = scope->value;
+    while (name != NULL) {
+        if (strcmp(name->chars, name) == 0) {
+            if ((what == FUN || what == MACRO) && (name->value == NULL || name->value->type != FUNCTION)) goto NEXT;
+            if (what == FUN && tehssl_test_flag(name, MACRO_FUNCTION)) goto NEXT;
+            if (what == MACRO && !tehssl_test_flag(name, MACRO_FUNCTION)) goto NEXT;
+            if (what == VAR && !tehssl_test_flag(name, VARIABLE)) goto NEXT;
+            return name->value;
+        }
         NEXT:
-        result = result->next;
+        name = name->next;
     }
     scope = scope->parent;
     goto LOOKUP;
