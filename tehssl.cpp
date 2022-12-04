@@ -187,6 +187,7 @@ inline uint8_t tehssl_get_cell_info(tehssl_object_t obj) {
         case SCOPE: return 0b011;
         case NAME: return 0b101;
         case FUNCTION: return (obj->functiontype == USERFUNCTION || obj->functiontype == MACRO) ? 0b010 : 0b000;
+        default: return 0;
     }
 }
 

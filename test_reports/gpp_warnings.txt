@@ -1,58 +1,63 @@
-tehssl.cpp:115:9: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
-  115 |         };
-      |         ^
-tehssl.cpp: In function ‘void tehssl_sweep(tehssl_vm_t)’:
-tehssl.cpp:363:34: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
-  363 |             printf(": Now have %lu objects\n", vm->num_objects - 1);
-      |                                ~~^             ~~~~~~~~~~~~~~~~~~~
-      |                                  |                             |
-      |                                  long unsigned int             size_t {aka unsigned int}
-      |                                %u
+tehssl.cpp:99:16: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
+   99 |         struct {
+      |                ^
+tehssl.cpp: In function ‘char* tehssl_next_token(FILE*)’:
+tehssl.cpp:519:42: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  519 |         if (comment && (ch == '\n' || ch == EOF)) comment = false;
+      |                                          ^
+tehssl.cpp:520:49: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  520 |         else if (informal && (isspace(ch) || ch == EOF)) informal = false;
+      |                                                 ^
+tehssl.cpp:539:12: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  539 |     if (ch == EOF) {
+      |            ^
+tehssl.cpp: In function ‘tehssl_object* tehssl_compile_until(tehssl_vm_t, FILE*, char)’:
+tehssl.cpp:613:45: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+  613 |             if ((strlen(token) == 0 && stop == EOF) || token[0] == stop) {
+      |                                             ^
+tehssl.cpp: In function ‘void tehssl_eval(tehssl_vm_t, tehssl_object_t, tehssl_object_t)’:
+tehssl.cpp:751:30: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  751 | void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
+      |                  ~~~~~~~~~~~~^~
+tehssl.cpp:751:50: warning: unused parameter ‘block’ [-Wunused-parameter]
+  751 | void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
+      |                                  ~~~~~~~~~~~~~~~~^~~~~
+tehssl.cpp:751:73: warning: unused parameter ‘scope’ [-Wunused-parameter]
+  751 | void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
+      |                                                         ~~~~~~~~~~~~~~~~^~~~~
 tehssl.cpp: In function ‘void tehssl_init_builtins(tehssl_vm_t)’:
-tehssl.cpp:967:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
-  967 | void tehssl_init_builtins(tehssl_vm_t vm) {
+tehssl.cpp:849:39: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  849 | void tehssl_init_builtins(tehssl_vm_t vm) {
       |                           ~~~~~~~~~~~~^~
 tehssl.cpp: In function ‘void myfunction(tehssl_vm_t, tehssl_object_t)’:
-tehssl.cpp:972:29: warning: unused parameter ‘vm’ [-Wunused-parameter]
-  972 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
+tehssl.cpp:854:29: warning: unused parameter ‘vm’ [-Wunused-parameter]
+  854 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
       |                 ~~~~~~~~~~~~^~
-tehssl.cpp:972:49: warning: unused parameter ‘scope’ [-Wunused-parameter]
-  972 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
+tehssl.cpp:854:49: warning: unused parameter ‘scope’ [-Wunused-parameter]
+  854 | void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
       |                                 ~~~~~~~~~~~~~~~~^~~~~
 tehssl.cpp: In function ‘int main(int, char**)’:
-tehssl.cpp:982:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  982 |         tehssl_make_string(vm, "i am cow hear me moo");
+tehssl.cpp:864:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  864 |         tehssl_make_string(vm, "i am cow hear me moo");
       |                                ^~~~~~~~~~~~~~~~~~~~~~
-tehssl.cpp:983:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  983 |         tehssl_make_symbol(vm, "Symbol!", SYMBOL_WORD);
+tehssl.cpp:865:32: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  865 |         tehssl_make_symbol(vm, "Symbol!", LITERAL);
       |                                ^~~~~~~~~
-tehssl.cpp:986:59: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
-  986 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
+tehssl.cpp:868:59: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  868 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
       |                                                           ^~~~~~~~
-tehssl.cpp:410:110: note: in definition of macro ‘tehssl_push_t’
-  410 | #define tehssl_push_t(vm, stack, item, t) do { tehssl_object_t cell = tehssl_alloc((vm), (t)); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
+tehssl.cpp:350:110: note: in definition of macro ‘tehssl_push_t’
+  350 | #define tehssl_push_t(vm, stack, item, t) do { tehssl_object_t cell = tehssl_alloc((vm), (t)); cell->value = item; cell->next = (stack); (stack) = cell; } while (false)
       |                                                                                                              ^~~~
-tehssl.cpp:986:9: note: in expansion of macro ‘tehssl_push’
-  986 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
+tehssl.cpp:868:9: note: in expansion of macro ‘tehssl_push’
+  868 |         tehssl_push(vm, vm->stack, tehssl_make_string(vm, "Foo123"));
       |         ^~~~~~~~~~~
-tehssl.cpp:989:15: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
-  989 |     printf("%lu objects\n", vm->num_objects);
-      |             ~~^             ~~~~~~~~~~~~~~~
-      |               |                 |
-      |               long unsigned int size_t {aka unsigned int}
-      |             %u
-tehssl.cpp:991:15: warning: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
-  991 |     printf("%lu objects after gc\n", vm->num_objects);
-      |             ~~^                      ~~~~~~~~~~~~~~~
-      |               |                          |
-      |               long unsigned int          size_t {aka unsigned int}
-      |             %u
-tehssl.cpp:1027:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
- 1027 |     tehssl_make_stream(vm, "stringstream", s);
+tehssl.cpp:909:28: warning: ISO C++ forbids converting a string constant to ‘char*’ [-Wwrite-strings]
+  909 |     tehssl_make_stream(vm, "stringstream", s);
       |                            ^~~~~~~~~~~~~~
-tehssl.cpp:973:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
-  973 | int main(int argc, char* argv[]) {
+tehssl.cpp:855:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
+  855 | int main(int argc, char* argv[]) {
       |          ~~~~^~~~
-tehssl.cpp:973:26: warning: unused parameter ‘argv’ [-Wunused-parameter]
-  973 | int main(int argc, char* argv[]) {
+tehssl.cpp:855:26: warning: unused parameter ‘argv’ [-Wunused-parameter]
+  855 | int main(int argc, char* argv[]) {
       |                    ~~~~~~^~~~~~
