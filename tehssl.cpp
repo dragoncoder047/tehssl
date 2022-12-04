@@ -692,7 +692,7 @@ tehssl_object_t tehssl_compile_until(tehssl_vm_t vm, FILE* stream, char stop) {
                     item = tehssl_make_symbol(vm, token + 1, KEYWORD_POP);
                 } else if (token[0]  == '+') {
                     #ifdef TEHSSL_DEBUG
-                    printf("PFlagop symbol: %s\n", token + 1);
+                    printf("Flag symbol: %s\n", token + 1);
                     #endif
                     item = tehssl_make_symbol(vm, token + 1, KEYWORD_FLAG);
                 } else {
