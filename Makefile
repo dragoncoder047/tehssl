@@ -11,5 +11,5 @@ test32:
 	g++ -m32 tehssl.cpp -DTEHSSL_DEBUG -DTEHSSL_TEST -o tehssl32 -Wall -Wextra -Wpedantic 2> test_reports/gpp_warnings.txt
 	./tehssl32 > test_reports/output32.txt
 clean:
-	rm ./tehssl
-	rm ./tehssl32
+	rm -f tehssl
+	rm -f tehssl32
