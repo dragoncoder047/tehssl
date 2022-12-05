@@ -19,16 +19,17 @@ Cells 3 and 4 change based on the object. Here are how all the types use them (m
 
 | Type                    | Cell 3                     | Cell 4                | Notes |
 |:----------------------- |:-------------------------- |:--------------------- |:----- |
-| CONS, LINE, BLOCK       | value                      | next                  | |
+| CONS, LINE, BLOCK       | "car" value                | "cdr" next            | |
 | CLOSURE                 | closed-over scope          | code block            | |
+| SCOPE                   | bindings                   | parent scope          | |
 | FLOAT                   | `double` (spans two cells) |                       | |
-| INT                     | `int64_t`                  |                       | |
+| INT                     | `int64_t` (two cells)      |                       | |
 | SINGLETON               | singleton ID               |                       | |
 | SYMBOL, STRING          | `char*` data               | flags                 | Flags on a symbol indicates what type of symbol (normal, literal, keyword, etc). |
 | STREAM                  | `char*` id                 | standard libc `FILE*` | |
 | NAME                    | `char*` name               | value                 | Has a flag to indicate if it's a variable. |
 | FUNCTION                | pointer to function        | flags                 | Flags indicate what kind of function (pointer to BLOCK, C function, macro, type-function, etc). |
-| USERTYPE                | `char*` typename           | any pointer           |
+| USERTYPE                | `char*` typename           | pointer to whatever   | the pointer is a "weak" reference because the garbage collector assumes it's not an object and skips marking it. |
 
 ### Complex Structures
 
@@ -36,10 +37,16 @@ Of course, not every type can be implemented as a primitive.
 
 Here are some of the more complex types and how they are constructed:
 
-* **List**: a linked list of cons cells, as in Lisp.
-* **Dict / Map**: set up as a Lisp "assoc" list is, a list of cons pairs, with the key in cell 3 and the value in cell 4.
-* **Scope**: A list, where each element is a NAME object.
-* More to be added soon.
+* **List**: as in Lisp. The list created by `List {1 2 3}` (or `[1 2 3]`) is simply the cons structure `(1 . (2 . (3 . null)))`.
+* **Dict / Map**: same as a Lisp "assoc" list, a list of cons pairs: `[(key . value) (key . value) (key . value)]`.
+* **Scope**: This is a two-element cons pair  like `(bindings . parent)`. The `parent` is a pointer to the upper scope, and the bindings is a list, where each element is a NAME object. NAME objects are essentially a "shortcut" for an assoc pair containing a string key -- the NAME object's "car" pointer points to the C string itself, instead of a pointer to a STRING object which points to the C string -- which saves one object each.
+* **Closures**: These are a single cons pair (as a CLOSURE object) like `(scope . block)`. The scope contains the closed-over variables which preserves the scope heiarchy of when it was defined.
+
+These below are just ideas, but they might be implemented later:
+
+* **Classes** are a cons pair like `(prototype . parents)`. The `prototype` is a scope, where the methods can access the special `Self` variable for the current object.
+* **Instances** are a cons pair like `(instancevars . class)`. `instancevars` is a list of instance variables like in a scope, except the scope has no parent (it is just a bare list of names). The `class` is a reference to the parent class (for method lookups) -- and this is where "hot-swapping" comes in: monkeypatch the class, and all the instances instantly see the change.
+* The syntax for instance method lookups has yet to be defined.
 
 ## Program Structure
 
@@ -78,6 +85,12 @@ root --> BLOCK --> LINE --> LINE --> LINE --> LINE --> null
          null     item     item     item     item
 ```
 
+Or as Lisp lists:
+
+```lisp
+((item item item item) (item item item item) (item item item item) (item item item item))
+```
+
 Each of the `item` values can be a literal produced in step 3 above, or a sub-block.
 
 ### Types of Literals
@@ -89,31 +102,33 @@ Each of the `item` values can be a literal produced in step 3 above, or a sub-bl
 | `Undefined` | A sentinel value for an object that exists, but is not defined. |
 | `DNE` | A sentinel value for an object that does not exist. |
 | `123.456`, `1.23456e+2` | A double-precision floating point number |
-| `123`, `0x7B`, `0b1111011` | 32-bit signed integers |
+| `123`, `0x7B`, `0b1111011` | 64-bit signed integers |
 | `NaN` | The IEEE 754 Not-a-Number value (what you get when dividing zero by zero, for example) |
 | `"string"` | A string, of course. Only double quotes can be used right now, but if I feel that a single quote isn't going to be used for anything, I might add single-quote support. |
 | Anything else | A symbol (see below) |
 
 ## Evaluation
 
-Coming from the compiler/reader is the tree described above, with special macros (such as `Def` and `Let`) already processed into their dynamic siblings. Executing a block of code (from the `root` node, above) proceeds as follows:
+Coming from the compiler/reader is the tree described above. Executing a block of code (from the `root` node, above) proceeds as follows:
 
-1. An empty list is set up to be the "processed" line.
-2. The "unprocessed" line is scanned left-to-right.
+1. Each line is processed independently.
+2. Starting with the first line, an empty list is set up to be the "processed" line.
+3. The "unprocessed" line is scanned *left-to-right*.
     1. If the item is not a symbol, it is simply pushed to the "processed" line.
-    2. If it is a symbol, and it is in the current scope as a macro, the macro's function is called with the remainder of the line. The return value of the macro call (i.e. the top stack value) is used as the unprocessed line.
-3. The first element of the "processed" line (really the last element of the line) is checked.
+    2. If it is a symbol, and it is regsistered in the current scope as a macro, the macro's function is called with the remainder of the line. The return value of the macro call (i.e. the top stack value) is used as the unprocessed line.
+4. The first element of the "processed" line (really the last element of the original line) is checked.
     1. If it is a string, number, literal symbol, etc. it is simply pushed to the stack.
-    2. If it is a word symbol (not a keyword), it is looked up in the current scope and then the global scope. If the lookups fail, an appropriate error massage is returned. If not, a variable is pushed to the stack, and a function is called.
-    3. If it is a sub-block, it is made into a CLOSURE with the current scope, and the closure is pushed to the stack.
-4. The next element of the line is run as in step 3.
-5. When the line is exhausted, the next line is processed, and run as before.
+    2. If it is a word symbol (not a keyword), it is looked up in the current scope. If lookup fails, an appropriate error message is thrown. If not, a variable is pushed to the stack, and a function is called.
+    3. If it is a keyword symbol, the appropriate "syntactic sugar" method is called.
+    4. If it is a sub-block, it is made into a CLOSURE with the current scope, and the closure is pushed to the stack. *Note that blocks aren't called automatically -- that is the job of the `Do` function. `Do` simply evaluates a closure's block within its closed-over scope.*
+5. The next element of the line is run as in step 4.
+6. When the line is exhausted, the next line is processed, and run as before.
 
 ## Keyword Arguments
 
 TEHSSL allows the use of keyword arguments. A keyword-argument is formed by prefixing it with a dash (`-`), and when this is executed, it performs the special "magic" operation of pushing the top stack value onto the keywords dict at the particular key. This allows the programmer to write things such as `-foo 123` and the function will be given a keyword argument of `foo` with a value of 123 -- without it, the function will recieve no keyword argument, and its behavior will ostensibly be changed.
 
-Note that despite the appearance of a keyword argument, they are not the same as a command-line flag -- they must always have a value. You cannot simply write `-foo` with no value on the stack; you'll get a stack underflow error before this.
+Note that despite the appearance of a keyword argument, they are not the same as a command-line flag -- they must always have a value. You cannot simply write `-foo` with no value on the stack; you'll get a stack underflow error before this. For a real flag that just signals that it was included, `+foo` will do the job (it simply uses the default value of `True`).
 
 Inside a user-code function, `&foo` will retrieve the value of the keyword argument named `foo` (`DNE` if it was not set) and `%foo` will pop it from the dict (unsetting it in the process).
 
