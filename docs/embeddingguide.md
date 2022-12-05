@@ -2,11 +2,11 @@
 
 ## C FFI
 
-## Custom Types
+### Custom Types
 
 ## In an Arduino sketch
 
-Download `tehssl.c` and link to it in your arduino sketch. Here is a basic example of what functions you will need to call:
+Download `tehssl.cpp` and link to it in your arduino sketch. Here is a basic example of what functions you will need to call:
 
 ```cpp
 #include "tehssl.cpp"
