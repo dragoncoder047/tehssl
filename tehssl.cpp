@@ -14,7 +14,7 @@
 #endif
 
 #ifdef TEHSSL_DEBUG
-#define DEBUG(...) printf(__VA_ARGS__)
+#define DEBUG printf
 #else
 #define DEBUG(...)
 #endif
@@ -51,6 +51,13 @@ enum tehssl_function_type {
     MACRO,
     BUILTIN_MACRO,
     TYPE_FUNCTION
+};
+
+enum tehssl_cell_infobits {
+    CAR_PTR = 2,
+    CDR_PTR = 1,
+    CAR_STRING = 4,
+    NO_PTR = 0
 };
 
 // Different types
@@ -185,16 +192,16 @@ inline uint8_t tehssl_get_cell_info(tehssl_object_t obj) {
         case CONS:
         case LINE:
         case BLOCK: 
-        case CLOSURE: return 0b011;
+        case CLOSURE: return CAR_PTR | CDR_PTR;
         case FLOAT:
         case INT: 
-        case SINGLETON: return 0b000;
+        case SINGLETON: return NO_PTR;
         case SYMBOL:
         case STRING:
-        case STREAM: return 0b100;
-        case SCOPE: return 0b011;
-        case NAME: return 0b101;
-        case FUNCTION: return (obj->functiontype == USERFUNCTION || obj->functiontype == MACRO) ? 0b010 : 0b000;
+        case STREAM: return CAR_STRING;
+        case SCOPE: return CAR_PTR | CDR_PTR;
+        case NAME: return CAR_STRING | CDR_PTR;
+        case FUNCTION: return (obj->functiontype == USERFUNCTION || obj->functiontype == MACRO) ? CAR_PTR : NO_PTR;
         default: return 0;
     }
 }
@@ -254,8 +261,8 @@ void tehssl_markobject(tehssl_vm_t vm, tehssl_object_t object, tehssl_flag_t fla
     }
     tehssl_set_flag(object, flag);
     uint8_t usage = tehssl_get_cell_info(object);
-    if (usage & 0b010) tehssl_markobject(vm, object->car, flag);
-    if (usage & 0b001) {
+    if (usage & CAR_PTR) tehssl_markobject(vm, object->car, flag);
+    if (usage & CDR_PTR) {
         object = object->cdr;
         goto MARK;
     }
@@ -283,7 +290,7 @@ void tehssl_sweep(tehssl_vm_t vm) {
                 if (unreached->file != NULL) fclose(unreached->file);
                 unreached->file = NULL;
             }
-            if (tehssl_get_cell_info(unreached) & 0b100) {
+            if (tehssl_get_cell_info(unreached) & CAR_STRING) {
                 DEBUG(" name-> \"%s\"", unreached->chars);
                 free(unreached->chars);
                 unreached->chars = NULL;
