@@ -1,20 +1,6 @@
-tehssl.cpp:99:16: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
-   99 |         struct {
-      |                ^
-tehssl.cpp: In function ‘char* tehssl_next_token(FILE*)’:
-tehssl.cpp:519:42: warning: comparison is always false due to limited range of data type [-Wtype-limits]
-  519 |         if (comment && (ch == '\n' || ch == EOF)) comment = false;
-      |                                          ^
-tehssl.cpp:520:49: warning: comparison is always false due to limited range of data type [-Wtype-limits]
-  520 |         else if (informal && (isspace(ch) || ch == EOF)) informal = false;
-      |                                                 ^
-tehssl.cpp:539:12: warning: comparison is always false due to limited range of data type [-Wtype-limits]
-  539 |     if (ch == EOF) {
-      |            ^
-tehssl.cpp: In function ‘tehssl_object* tehssl_compile_until(tehssl_vm_t, FILE*, char)’:
-tehssl.cpp:613:45: warning: comparison is always false due to limited range of data type [-Wtype-limits]
-  613 |             if ((strlen(token) == 0 && stop == EOF) || token[0] == stop) {
-      |                                             ^
+tehssl.cpp:116:9: warning: ISO C++ prohibits anonymous structs [-Wpedantic]
+  116 |         };
+      |         ^
 tehssl.cpp: In function ‘void tehssl_eval(tehssl_vm_t, tehssl_object_t, tehssl_object_t)’:
 tehssl.cpp:751:30: warning: unused parameter ‘vm’ [-Wunused-parameter]
   751 | void tehssl_eval(tehssl_vm_t vm, tehssl_object_t block, tehssl_object_t scope) {
