@@ -1,66 +1,66 @@
-==16137== Memcheck, a memory error detector
-==16137== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==16137== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==16137== Command: ./tehssl
-==16137== Parent PID: 16136
-==16137== 
-==16137== 
-==16137== HEAP SUMMARY:
-==16137==     in use at exit: 70 bytes in 10 blocks
-==16137==   total heap usage: 277 allocs, 267 frees, 46,324 bytes allocated
-==16137== 
-==16137== 5 bytes in 1 blocks are definitely lost in loss record 1 of 6
-==16137==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==16137==    by 0x48F438E: strdup (strdup.c:42)
-==16137==    by 0x10AA55: tehssl_make_symbol(tehssl_vm*, char*, tehssl_symbol_type) (tehssl.cpp:375)
-==16137==    by 0x10C088: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:683)
-==16137==    by 0x10C2FA: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:819)
-==16137==    by 0x109DDF: main (tehssl.cpp:913)
-==16137== 
-==16137== 7 bytes in 1 blocks are definitely lost in loss record 2 of 6
-==16137==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==16137==    by 0x48F438E: strdup (strdup.c:42)
-==16137==    by 0x109C2E: tehssl_make_string (tehssl.cpp:362)
-==16137==    by 0x109C2E: main (tehssl.cpp:868)
-==16137== 
-==16137== 7 bytes in 1 blocks are definitely lost in loss record 3 of 6
-==16137==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==16137==    by 0x48F438E: strdup (strdup.c:42)
-==16137==    by 0x10A945: tehssl_make_string(tehssl_vm*, char*) (tehssl.cpp:362)
-==16137==    by 0x10C024: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:673)
-==16137==    by 0x10B8D3: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:634)
-==16137==    by 0x10C2FA: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:819)
-==16137==    by 0x109DDF: main (tehssl.cpp:913)
-==16137== 
-==16137== 11 bytes in 1 blocks are definitely lost in loss record 4 of 6
-==16137==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==16137==    by 0x48F438E: strdup (strdup.c:42)
-==16137==    by 0x10C42F: tehssl_register_word(tehssl_vm*, char const*, void (*)(tehssl_vm*, tehssl_object*)) (tehssl.cpp:843)
-==16137==    by 0x109808: main (tehssl.cpp:870)
-==16137== 
-==16137== 17 bytes in 3 blocks are definitely lost in loss record 5 of 6
-==16137==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==16137==    by 0x48F438E: strdup (strdup.c:42)
-==16137==    by 0x10AA55: tehssl_make_symbol(tehssl_vm*, char*, tehssl_symbol_type) (tehssl.cpp:375)
-==16137==    by 0x10B7ED: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:704)
-==16137==    by 0x10C2FA: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:819)
-==16137==    by 0x109DDF: main (tehssl.cpp:913)
-==16137== 
-==16137== 23 bytes in 3 blocks are definitely lost in loss record 6 of 6
-==16137==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
-==16137==    by 0x48F438E: strdup (strdup.c:42)
-==16137==    by 0x10AA55: tehssl_make_symbol(tehssl_vm*, char*, tehssl_symbol_type) (tehssl.cpp:375)
-==16137==    by 0x10B7ED: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:704)
-==16137==    by 0x10B8D3: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:634)
-==16137==    by 0x10C2FA: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:819)
-==16137==    by 0x109DDF: main (tehssl.cpp:913)
-==16137== 
-==16137== LEAK SUMMARY:
-==16137==    definitely lost: 70 bytes in 10 blocks
-==16137==    indirectly lost: 0 bytes in 0 blocks
-==16137==      possibly lost: 0 bytes in 0 blocks
-==16137==    still reachable: 0 bytes in 0 blocks
-==16137==         suppressed: 0 bytes in 0 blocks
-==16137== 
-==16137== For lists of detected and suppressed errors, rerun with: -s
-==16137== ERROR SUMMARY: 6 errors from 6 contexts (suppressed: 0 from 0)
+==1150== Memcheck, a memory error detector
+==1150== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1150== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==1150== Command: ./tehssl
+==1150== Parent PID: 1149
+==1150== 
+==1150== 
+==1150== HEAP SUMMARY:
+==1150==     in use at exit: 70 bytes in 10 blocks
+==1150==   total heap usage: 277 allocs, 267 frees, 46,324 bytes allocated
+==1150== 
+==1150== 5 bytes in 1 blocks are definitely lost in loss record 1 of 6
+==1150==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1150==    by 0x48F438E: strdup (strdup.c:42)
+==1150==    by 0x10AA75: tehssl_make_symbol(tehssl_vm*, char*, tehssl_symbol_type) (tehssl.cpp:358)
+==1150==    by 0x10C0A8: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:636)
+==1150==    by 0x10C31A: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:755)
+==1150==    by 0x109DFF: main (tehssl.cpp:849)
+==1150== 
+==1150== 7 bytes in 1 blocks are definitely lost in loss record 2 of 6
+==1150==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1150==    by 0x48F438E: strdup (strdup.c:42)
+==1150==    by 0x109C4E: tehssl_make_string (tehssl.cpp:345)
+==1150==    by 0x109C4E: main (tehssl.cpp:804)
+==1150== 
+==1150== 7 bytes in 1 blocks are definitely lost in loss record 3 of 6
+==1150==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1150==    by 0x48F438E: strdup (strdup.c:42)
+==1150==    by 0x10A965: tehssl_make_string(tehssl_vm*, char*) (tehssl.cpp:345)
+==1150==    by 0x10C044: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:630)
+==1150==    by 0x10B8F3: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:605)
+==1150==    by 0x10C31A: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:755)
+==1150==    by 0x109DFF: main (tehssl.cpp:849)
+==1150== 
+==1150== 11 bytes in 1 blocks are definitely lost in loss record 4 of 6
+==1150==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1150==    by 0x48F438E: strdup (strdup.c:42)
+==1150==    by 0x10C44F: tehssl_register_word(tehssl_vm*, char const*, void (*)(tehssl_vm*, tehssl_object*)) (tehssl.cpp:779)
+==1150==    by 0x109828: main (tehssl.cpp:806)
+==1150== 
+==1150== 17 bytes in 3 blocks are definitely lost in loss record 5 of 6
+==1150==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1150==    by 0x48F438E: strdup (strdup.c:42)
+==1150==    by 0x10AA75: tehssl_make_symbol(tehssl_vm*, char*, tehssl_symbol_type) (tehssl.cpp:358)
+==1150==    by 0x10B80D: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:648)
+==1150==    by 0x10C31A: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:755)
+==1150==    by 0x109DFF: main (tehssl.cpp:849)
+==1150== 
+==1150== 23 bytes in 3 blocks are definitely lost in loss record 6 of 6
+==1150==    at 0x483B7F3: malloc (in /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1150==    by 0x48F438E: strdup (strdup.c:42)
+==1150==    by 0x10AA75: tehssl_make_symbol(tehssl_vm*, char*, tehssl_symbol_type) (tehssl.cpp:358)
+==1150==    by 0x10B80D: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:648)
+==1150==    by 0x10B8F3: tehssl_compile_until(tehssl_vm*, _IO_FILE*, char) (tehssl.cpp:605)
+==1150==    by 0x10C31A: tehssl_run_string(tehssl_vm*, char const*) (tehssl.cpp:755)
+==1150==    by 0x109DFF: main (tehssl.cpp:849)
+==1150== 
+==1150== LEAK SUMMARY:
+==1150==    definitely lost: 70 bytes in 10 blocks
+==1150==    indirectly lost: 0 bytes in 0 blocks
+==1150==      possibly lost: 0 bytes in 0 blocks
+==1150==    still reachable: 0 bytes in 0 blocks
+==1150==         suppressed: 0 bytes in 0 blocks
+==1150== 
+==1150== For lists of detected and suppressed errors, rerun with: -s
+==1150== ERROR SUMMARY: 6 errors from 6 contexts (suppressed: 0 from 0)
