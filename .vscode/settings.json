@@ -1,11 +1,8 @@
 {
     "cSpell.words": [
-        "CMFUNCTION",
-        "CNFUNCTION",
         "fmemopen",
         "TEHSSL",
-        "TFUNCTION",
-        "UNFUNCTION"
+        "sobj"
     ],
     "C_Cpp.dimInactiveRegions": false
 }
