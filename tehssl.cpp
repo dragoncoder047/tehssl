@@ -796,7 +796,7 @@ void tehssl_init_builtins(tehssl_vm_t vm) {
 #ifdef TEHSSL_TEST
 void myfunction(tehssl_vm_t vm, tehssl_object_t scope) { printf("myfunction called!\n"); }
 int main(int argc, char* argv[]) {
-    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A -step 3 do { take the Square; Print the Fibbonaci of said square; };\n~~Literals\nPrints {\"DONE!!\" 123 123.456E789 Infinity NaN Undefined DNE False True}";
+    const char* str = "~~Hello world!; Foobar\nFor each number in Range 1 to 0x0A -step 3 do { take the Square; Print the Fibonacci of said square; };\n~~Literals\nPrints {\"DONE!!\" 123 123.456E789 Infinity NaN Undefined DNE False True}";
     tehssl_vm_t vm = tehssl_new_vm();
 
     printf("\n\n-----test 1: garbage collector----\n\n");
