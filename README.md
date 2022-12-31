@@ -1,15 +1,7 @@
 # TEHSSL
 
-(pronounced "tessel")
+## is ABANDONED in lieu of other scripting languages freely available on the Internet.
 
-The Tiny Embedded Hot-Swapping Scripting Language.
+**All the (partial) relevant code is in `tehssl.cpp`. The rest is juct documentation and non-working examples.**
 
-[TEHSSL scripting guide](docs/tehsslscripting.md)
-
-[For C++ programmers: Embedding Guide](docs/embeddingguide.md)
-
-[Internals of how TEHSSL Works](docs/tehsslinternals.md)
-
-## Known Bugs
-
-None as of yet.
+The Tiny Embedded Hot-Swapping Scripting Language. **Incomplete and will forever remain that way.**
